@@ -279,11 +279,11 @@ VI 设计过程中，设计师会不断表达审美偏好：
 
 **color-palette 集成**：
 
-使用 `~/.workbuddy/skills/color-palette/` 提取参考作品的色彩：
+使用 `./dependencies/color-palette/` 提取参考作品的色彩：
 
 ```bash
 # 从参考图提取色彩
-python ~/.workbuddy/skills/color-palette/scripts/extract_palette.py [图片路径] --num-colors 8 --output-format hex
+python ./dependencies/color-palette/scripts/extract_palette.py [图片路径] --num-colors 8 --output-format hex
 ```
 
 **特征提取输出格式**：
