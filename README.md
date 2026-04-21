@@ -2,10 +2,11 @@
 
 > 专业平面设计与VI视觉识别系统生成技能 | AI-Powered Brand Design & VI System Generator
 
-[![Version](https://img.shields.io/badge/version-v2.0.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
+[![Version](https://img.shields.io/badge/version-v2.1.4-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
-[![AI Models](https://img.shields.io/badge/AI%20Models-10%2B-orange.svg)](#-ai生图模型)
+[![AI Models](https://img.shields.io/badge/AI%20Models-16%2B-orange.svg)](#-ai生图模型)
 [![Compliance](https://img.shields.io/badge/Compliance-14%20Industries-red.svg)](#-合规审查)
+[![Dependencies](https://img.shields.io/badge/Dependencies-7%20Built--in-purple.svg)](#-内置依赖)
 
 ---
 
@@ -26,9 +27,9 @@
 
 ---
 
-## 🔄 完整工作流（6阶段）
+## 🔄 完整工作流（6阶段 × 3层递进）
 
-> **核心理念**：不是直接出图，而是通过结构化流程确保设计质量。每个阶段都有明确目标、方法和交付物。
+> **核心理念**：不是直接出图，而是通过**渐进式披露协议**确保设计质量。每个 Phase 按「方向确认 → 细节补全 → 高级定制」三层递进，用户确认后才解锁下一步。
 
 ### Phase 1: 需求追问 🔍
 
@@ -36,6 +37,7 @@
 
 **方法**：
 - 结构化追问（品牌定位、目标受众、风格偏好、输出格式等）
+- **位置四问**框架：叙事角色 / 观众距离 / 视觉温度 / 容量估算
 - 识别模糊用词（"高端""大气"→具体视觉参数）
 - 区分目标与手段（"要3D Logo"→真实需求是"科技感"）
 - 暴露设计假设（行业惯例？还是有数据支撑？）
@@ -50,11 +52,12 @@
 
 **方法**：
 - **竞品视觉分析**：分析行业头部品牌的Logo风格、色彩、字体、辅助图形
-- **Moodboard制作**：收集6维度（色彩/字体/构图/纹理/摄影/调性）视觉参考
+- **Moodboard制作**：收集色彩/字体/构图 3 维度视觉参考
 - **品牌战略框架**：定义品牌个性、目标受众、竞争语境、视觉个性映射
-- **设计哲学创建**：为每套设计定义一个"视觉美学运动"作为统一纲领
+- **设计哲学创建**：从 13 种设计哲学风格库选取起点，定义"视觉美学运动"
+- **craftsmanship 强调**：触发 high-craftsmanship 执行模式
 
-**交付物**：`设计哲学.md` + 品牌战略文档 + Moodboard
+**交付物**：设计哲学文档 + 品牌战略文档 + Moodboard
 
 ---
 
@@ -63,10 +66,11 @@
 **目标**：生成可确认的设计方向
 
 **方法**：
+- **Mood, Not Layout**：描述情绪而非布局，短提示词 > 长提示词
 - 以设计哲学为纲领构造生图 Prompt
-- 豆包 Seedream 5.0 API（推荐）或备用生图工具
-- **逐步确认**：每生成一个核心物料→暂停等待用户确认→确认后再扩展
-- 同步生成辅助图形（是VI的基础系统组件）
+- 16+ AI 生图模型可选（用户自选或场景推荐）
+- **5-10-2-8 素材门槛**：搜索5轮→10候选→精选2个→每个8分以上
+- 逐步确认：每生成一个核心物料→暂停等待用户确认→确认后再扩展
 
 **交付物**：Logo样稿 + 辅助图形 + 核心物料样稿
 
@@ -79,8 +83,9 @@
 **方法**：
 - 读取 `brand-profile.md` 确认所有锁定项
 - **合规前置**：生成每个物料前扫描合规要求，内化到Prompt
+- **核心资产协议**：Logo>产品图>UI截图>色值>字体的识别度优先级
+- **素材质量门**：执行 5-10-2-8 门槛，不够8分宁可不用
 - **包装双产出**：包装物料必须同时提供刀图（生产用）+ 成品效果图（确认用）
-- 所有物料共享同一设计哲学和品牌战略
 
 **交付物**：全套VI物料（Logo变体、办公用品、宣传物料、户外广告等）
 
@@ -94,9 +99,11 @@
 - **三重保障**：生成时预扫描 + 完成后总审查 + 审美质量自检
 - 20项合规审查清单（中文字体、商标使用、绝对化用语、字体版权等）
 - 14大行业特殊合规要求
-- 设计评审（11维度：色彩/构图/字体/层次/一致性等）
+- **五维专家评审**：哲学一致性 / 视觉层级 / 细节执行 / 功能性 / 创新性（各0-10分）
+- **场景评审侧重**：不同物料类型有不同的评审维度优先级
+- **常见设计问题 Top 10**：字号层级、颜色过多、间距不统一等（含修复数值）
 
-**交付物**：`合规审查报告.md`
+**交付物**：合规审查报告 + 五维评审报告
 
 ---
 
@@ -143,19 +150,47 @@
 | Ideogram | 文字生成 | 带文字的海报 |
 | Stable Image | 稳定输出 | 标准化物料 |
 
-### 📚 内置方法论（依赖Skills）
+### 📚 内置依赖（7个，已全部打包）
 
 | 技能 | 用途 |
 |------|------|
-| canvas-design | 设计哲学方法论 + 81 字体库 |
-| brand-cog | 品牌战略方法论 |
-| design-critique | 11 维度设计评审 |
-| ui-design-review | 10 维度视觉评审 + 0-10 评分 |
-| svg-draw | SVG 矢量绘制 + PNG 转换 |
-| color-palette | 图片色彩提取 |
-| **pptx** | **VI规范手册PPT生成** |
+| **canvas-design** | 设计哲学方法论 + 81 OFL 字体库 |
+| **brand-cog** | 品牌战略方法论 |
+| **design-critique** | 11 维度设计评审 |
+| **ui-design-review** | 10 维度视觉评审 + 0-10 评分 |
+| **svg-draw** | SVG 矢量绘制 + PNG 转换 |
+| **color-palette** | 图片色彩提取 |
+| **pptx** | VI规范手册PPT生成 |
 
-> ⚠️ **注意**：这些依赖的 Skills 已包含在 `dependencies/` 目录中，下载后可直接使用。
+> ✅ **所有依赖已内置在 `dependencies/` 目录中**，下载后可直接使用，无需额外安装。
+
+---
+
+## 🎨 审美方法论（v2.1 新增）
+
+Graphic Design Pro 融合了多个顶级设计方法论，确保每次产出都有审美底线：
+
+| 方法论 | 来源 | 核心贡献 |
+|--------|------|---------|
+| **huashu-design** | 外部 | 位置四问、5-10-2-8素材门槛、五维评审、反AI Slop清单、品位锚点、13种设计哲学库 |
+| **frontend-design** | Anthropic | 前端审美5维（字体/色彩/动效/构图/背景细节）、反generic AI清单 |
+| **canvas-design** | Anthropic | 设计哲学创建方法论、MoodNotLayout原则、craftsmanship强调 |
+| **algorithmic-art** | Anthropic | 算法艺术框架、5大技术工具箱（噪声/流场/粒子/递归/参数设计） |
+
+### 反 AI Slop 清单
+
+识别并避免 AI 默认产物的视觉套路：
+- 圆角卡片 + 左 border accent 色
+- 激进紫色渐变、Mesh gradient 铺满背景
+- Inter/Roboto 纯 system font 作 display
+- Bento grid 过度泛滥、大 hero + 3-column features 模板
+
+### 品位锚点
+
+- 「一个细节做到 120%，其它做到 80%」
+- 衬线 display + 无衬线 body
+- 一个有温度的底色 + 单个 accent 贯穿全场
+- 留白至少占总面积 40%（极简风格 60%+）
 
 ---
 
@@ -196,54 +231,56 @@
 
 ```
 graphic-design-pro/
-├── SKILL.md                    # 主技能定义（路由+规则）
-├── README.md                   # 本文件
-├── CHANGELOG.md                # 变更日志
-├── .gitignore                  # Git 忽略配置
+├── SKILL.md                       # 主技能定义（路由+规则+硬约束）
+├── README.md                      # 本文件
+├── CHANGELOG.md                   # 变更日志
+├── AGENTS.md                      # Agent 工作规范
 │
-├── references/                 # 参考文档 (24个)
-│   ├── phase-1.md              # 需求追问
-│   ├── phase-2.md              # 竞品分析+设计哲学
-│   ├── phase-3.md              # 样稿生成
-│   ├── phase-4.md              # VI物料扩展
-│   ├── phase-5.md              # 合规审查
-│   ├── phase-6.md              # 落地指导
-│   ├── image-models.md         # AI生图模型全览
-│   ├── design-compliance.md    # 合规审查清单（14行业）
-│   ├── design-aesthetics.md    # 审美参照
-│   ├── vi-materials.md         # 100+物料清单
-│   ├── vi-design-toolkit.md    # VI设计工具包
-│   ├── skill-self-evolution.md # 自进化机制
-│   ├── aesthetic-learning.md   # 审美学习
-│   ├── brand-cases/            # 品牌案例（可口可乐/天猫/抖音等）
-│   └── ...
+├── references/                    # 参考文档 (20个)
+│   ├── phase-1.md                 # Phase 1: 需求追问
+│   ├── phase-2.md                 # Phase 2: 竞品分析+设计哲学
+│   ├── phase-3.md                 # Phase 3: 样稿生成
+│   ├── phase-4.md                 # Phase 4: VI物料扩展
+│   ├── phase-5.md                 # Phase 5: 合规审查
+│   ├── phase-6.md                 # Phase 6: 落地指导
+│   ├──
+│   ├── anti-ai-slop.md            # 反AI Slop清单（huashu-design）
+│   ├── taste-anchors.md           # 品位锚点（huashu-design）
+│   ├── design-philosophies.md     # 13种设计哲学风格库
+│   ├── algorithmic-art-guide.md   # 算法艺术方法论（Anthropic）
+│   ├── frontend-design-aesthetics.md  # 前端审美方法论（Anthropic）
+│   ├── external-resources.md      # 50+外部资源索引（awesome-design）
+│   ├── brand-spec.md              # 品牌资产规范模板
+│   ├── evolution-log.md           # 进化日志（E-001~E-012）
+│   ├──
+│   ├── image-models.md            # AI生图模型全览
+│   ├── design-compliance.md       # 合规审查清单（14行业）
+│   ├── design-aesthetics.md       # 审美参照+五维评审评分标准
+│   ├── vi-materials.md            # 100+物料清单
+│   ├── vi-design-toolkit.md       # VI设计工具包
+│   ├── skill-self-evolution.md    # 自进化机制
+│   ├── aesthetic-learning.md      # 审美学习
+│   ├── design-references.md       # 品牌案例知识库
+│   ├── api-and-tools.md           # API与工具说明
+│   └── brand-cases/               # 品牌案例
 │
-├── scripts/                    # Python 脚本 (7个)
-│   ├── generate_image.py       # AI生图
-│   ├── compliance_check.py     # 合规检查
-│   ├── color_system.py         # 色彩系统
-│   ├── brand_guidelines.py     # 品牌规范
-│   ├── create_psd.py           # PSD创建
-│   ├── vectorize.py            # 矢量转换
-│   └── remove_watermark.py     # 去水印
+├── dependencies/                  # 内置依赖（7个，复制即用）
+│   ├── canvas-design/             # 设计哲学+81 OFL字体
+│   ├── brand-cog/                 # 品牌战略
+│   ├── design-critique/           # 11维设计评审
+│   ├── ui-design-review/          # 10维视觉评审
+│   ├── svg-draw/                  # 矢量绘制
+│   ├── color-palette/             # 色彩提取
+│   └── pptx/                      # PPT生成
 │
-├── dependencies/               # 依赖的 Skills（7个）
-│   ├── canvas-design/          # 设计哲学+81字体
-│   ├── brand-cog/              # 品牌战略
-│   ├── design-critique/        # 11维设计评审
-│   ├── ui-design-review/       # 10维视觉评审
-│   ├── svg-draw/               # 矢量绘制
-│   ├── color-palette/          # 色彩提取
-│   └── pptx/                   # PPT生成
-│
-└── assets/                     # 资源目录
+└── assets/                        # 资源目录
 ```
 
 ---
 
 ## 🚀 使用方式
 
-### 在 WorkBuddy / Claude Code 中
+### 在 Kimi Code CLI / Claude Code 中
 
 ```
 use_skill graphic-design-pro
@@ -270,12 +307,19 @@ use_skill graphic-design-pro
 | 4 | **逐步确认** — 每个核心物料完成后必须暂停等待确认 |
 | 5 | **包装双产出** — 包装物料必须同时给刀图+效果图 |
 | 6 | **中文字号≥英文** — 招牌/广告的中文必须大于等于英文 |
+| 7 | **素材不滥竽** — 5-10-2-8门槛，不够8分宁可不用 |
+| 8 | **情绪先于布局** — Mood, Not Layout，描述感受而非位置 |
 
 ---
 
 ## 📝 更新日志
 
 详见 [CHANGELOG.md](./CHANGELOG.md)
+
+**最新版本 v2.1.4**（2026-04-21）：
+- 上下文溢出修复（SKILL.md 从 58.5KB 压缩至 49.2KB）
+- 进化日志拆分、重复定义集中化、Gate命名去重
+- 依赖全部打包（7个内置，复制即用）
 
 ---
 
@@ -285,4 +329,4 @@ MIT License
 
 ---
 
-> **版本**: v2.0.0 | **更新日期**: 2026-04-20 | **作者**: WorkBuddy AI Assistant
+> **版本**: v2.1.4 | **更新日期**: 2026-04-21 | **作者**: WorkBuddy AI Assistant
