@@ -2,7 +2,7 @@
 
 > 专业平面设计与VI视觉识别系统生成技能 | AI-Powered Brand Design & VI System Generator
 
-[![Version](https://img.shields.io/badge/version-v2.1.4-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
+[![Version](https://img.shields.io/badge/version-v2.2.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![AI Models](https://img.shields.io/badge/AI%20Models-16%2B-orange.svg)](#-ai生图模型)
 [![Compliance](https://img.shields.io/badge/Compliance-14%20Industries-red.svg)](#-合规审查)
@@ -86,6 +86,7 @@
 - **核心资产协议**：Logo>产品图>UI截图>色值>字体的识别度优先级
 - **素材质量门**：执行 5-10-2-8 门槛，不够8分宁可不用
 - **包装双产出**：包装物料必须同时提供刀图（生产用）+ 成品效果图（确认用）
+- **AI 生图边界**：明确 AI 生图不是渲染引擎，精确排版/3D结构/跨图一致性场景禁止使用 AI 生图
 
 **交付物**：全套VI物料（Logo变体、办公用品、宣传物料、户外广告等）
 
@@ -244,6 +245,7 @@ graphic-design-pro/
 │   ├── phase-5.md                 # Phase 5: 合规审查
 │   ├── phase-6.md                 # Phase 6: 落地指导
 │   ├──
+│   ├── ai-image-limitations.md    # AI生图能力边界（技术原理/漂移根因/3D限制/自检清单）
 │   ├── anti-ai-slop.md            # 反AI Slop清单（huashu-design）
 │   ├── taste-anchors.md           # 品位锚点（huashu-design）
 │   ├── design-philosophies.md     # 13种设计哲学风格库
@@ -251,9 +253,9 @@ graphic-design-pro/
 │   ├── frontend-design-aesthetics.md  # 前端审美方法论（Anthropic）
 │   ├── external-resources.md      # 50+外部资源索引（awesome-design）
 │   ├── brand-spec.md              # 品牌资产规范模板
-│   ├── evolution-log.md           # 进化日志（E-001~E-012）
+│   ├── evolution-log.md           # 进化日志（E-001~E-013）
 │   ├──
-│   ├── image-models.md            # AI生图模型全览
+│   ├── image-models.md            # AI生图模型全览 + 一致性与Seed控制
 │   ├── design-compliance.md       # 合规审查清单（14行业）
 │   ├── design-aesthetics.md       # 审美参照+五维评审评分标准
 │   ├── vi-materials.md            # 100+物料清单
@@ -305,10 +307,14 @@ use_skill graphic-design-pro
 | 2 | **品牌一致性锁死** — 确认后全流程不得擅自修改 |
 | 3 | **合规内置** — 生成时即扫描，不是事后补审 |
 | 4 | **逐步确认** — 每个核心物料完成后必须暂停等待确认 |
-| 5 | **包装双产出** — 包装物料必须同时给刀图+效果图 |
+| 5 | **包装双产出** — 包装物料必须同时给刀图+效果图（效果图用3D软件/样机，禁止AI生图） |
 | 6 | **中文字号≥英文** — 招牌/广告的中文必须大于等于英文 |
 | 7 | **素材不滥竽** — 5-10-2-8门槛，不够8分宁可不用 |
 | 8 | **情绪先于布局** — Mood, Not Layout，描述感受而非位置 |
+| 9 | **用户提供素材强制使用** — 上传即入库，后续强制引用，禁止AI重绘替代 |
+| 10 | **产出路径分叉** — 精确排版稿（HTML/Canvas）与 AI 概念图严格分离 |
+| 11 | **场景真实锚定** — 前台/门头/展墙必须基于真实场景照片设计 |
+| 12 | **AI 生图边界** — AI 不是渲染引擎，精确排版/3D结构/一致性场景禁止AI生图 |
 
 ---
 
@@ -316,7 +322,14 @@ use_skill graphic-design-pro
 
 详见 [CHANGELOG.md](./CHANGELOG.md)
 
-**最新版本 v2.1.4**（2026-04-21）：
+**最新版本 v2.2.0**（2026-04-22）：
+- **R15-R18 四大铁律**：用户素材强制使用 / 产出路径分叉 / 场景真实锚定 / AI生图边界
+- **AI生图能力边界文档**：技术原理/漂移根因/3D结构限制/Prompt真相/自检清单
+- **真实场景融合工作流**：前台/门头/展墙基于真实照片的设计路径（路径C-Real）
+- **包装效果图路径修正**：从"AI生图"修正为"3D软件/专业工具/PSD样机"
+- **已有素材模式**：用户提供Logo/素材时跳过AI生成，直接入库复用
+
+**上一版本 v2.1.4**（2026-04-21）：
 - 上下文溢出修复（SKILL.md 从 58.5KB 压缩至 49.2KB）
 - 进化日志拆分、重复定义集中化、Gate命名去重
 - 依赖全部打包（7个内置，复制即用）
@@ -329,4 +342,4 @@ MIT License
 
 ---
 
-> **版本**: v2.1.4 | **更新日期**: 2026-04-21 | **作者**: WorkBuddy AI Assistant
+> **版本**: v2.2.0 | **更新日期**: 2026-04-22 | **作者**: WorkBuddy AI Assistant
