@@ -11,8 +11,52 @@
 1. 读取 `brand-profile.md` 确认所有已解锁锁定项（品牌名、色彩、字体、设计哲学）
 2. 确认 Phase 2 已通过 P3-G3（或轻量级跳过 Phase 2）
 3. 确认一致性：当前设计与 brand-profile.md 是否一致？不一致 → 回退修正
+4. **检查用户资产（R15）**：读取 `brand-profile.md` 和 `brand-spec.md`，确认用户是否提供了 Logo/素材。如已提供 → 直接进入「已有素材模式」，跳过 Logo 生成。
 
 **未过 P3-G4 禁止开始 Phase 3。**
+
+---
+
+## 模式分叉 · 已有素材模式（R15）
+
+> 如果用户在 Phase 1 已提供 Logo 或其他品牌素材，Phase 3 不生成新 Logo，而是进入「资产确认 + 扩展」流程。
+
+### 已有素材模式的执行流程
+
+```
+用户提供 Logo/素材
+    ↓
+Step 1: 资产质量检查
+    • 分辨率是否足够？（印刷≥300dpi / 数字≥72dpi）
+    • 是否有透明背景？（PNG/SVG 优先，JPG 需评估去背难度）
+    • 色彩模式是否正确？
+    ↓
+Step 2: 资产入库
+    • 保存到 `assets/user-uploads/`
+    • 登记到 brand-spec.md
+    • 如为位图（JPG/PNG），使用 svg-draw 或 vectorize.py 生成矢量备份
+    ↓
+Step 3: 预渲染（R11）
+    • 生成反白版 / 单色版 / 各尺寸 PNG
+    • 保存到 `assets/logo/`
+    ↓
+Step 4: 基于已有资产生成样稿
+    • 所有生图 prompt 必须包含 reference_image（用户提供素材）
+    • 或在 HTML/Canvas 中直接以 `<img>` 引用真实文件路径
+    ↓
+Step 5: 用户确认
+    • 确认 Logo 使用正确
+    • 确认样稿方向
+```
+
+### 图生图强制规则
+
+当使用用户提供素材进行生图时：
+- **必须使用 `reference_image` 参数**（generate_image.py `--reference` 或各模型 API 的 image 字段）
+- **Prompt 必须明确说明素材角色**：`"based on the provided logo, create a ..."`
+- **禁止的行为**：不提素材、让 AI "重新画一个类似的 Logo"、在 prompt 中描述 Logo 让 AI 自由发挥
+
+**未提供素材 → 走标准模式（下方 Layer 1-3）。**
 
 ---
 
