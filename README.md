@@ -266,6 +266,15 @@ graphic-design-pro/
 │   ├── api-and-tools.md           # API与工具说明
 │   └── brand-cases/               # 品牌案例
 │
+├── console/                       # Web UI 控制台 (React + Vite + Tailwind)
+│   ├── src/
+│   │   ├── components/            # React 组件
+│   │   ├── hooks/                 # 自定义 Hooks
+│   │   ├── styles/                # 全局样式
+│   │   └── lib/                   # API 客户端
+│   ├── package.json
+│   └── vite.config.js
+│
 ├── dependencies/                  # 内置依赖（7个，复制即用）
 │   ├── canvas-design/             # 设计哲学+81 OFL字体
 │   ├── brand-cog/                 # 品牌战略
@@ -280,9 +289,53 @@ graphic-design-pro/
 
 ---
 
+## 🖥️ Graphic Design Pro Console（本地 Web UI）
+
+除了对话式交互，我们还提供了一个**本地 Web UI 控制台**，通过可视化界面操作整个设计工作流。
+
+### 架构
+
+```
+浏览器 (localhost:3000)
+    ↓ HTTP
+Console Server (React + Vite)
+    ↓ HTTP REST API
+OpenClaw Gateway (localhost:18789)
+    ↓ Internal API
+OpenClaw Agent Runtime (graphic-design-pro skill)
+    ↓
+用户配置的 LLM
+```
+
+**特点**：
+- 不脱离 OpenClaw 运行，LLM 调用完全走 OpenClaw
+- 跨平台（Windows/Mac/Linux），只需浏览器
+- 三栏布局：Phase 导航 / 对话面板 / 资产预览
+- 暗色编辑风界面（Playfair Display + JetBrains Mono + Noto Sans SC）
+
+### 启动 Console
+
+```bash
+cd console
+npm install
+npm run dev
+```
+
+浏览器自动打开 `http://localhost:3000`
+
+### 连接配置
+
+首次使用需要配置 OpenClaw Gateway：
+1. 点击右上角设置图标
+2. 填写 Gateway 地址（默认 `http://127.0.0.1:18789`）
+3. 填写 Bearer Token（通过 `openclaw config set gateway.token` 设置）
+4. 测试连接并保存
+
+---
+
 ## 🚀 使用方式
 
-### 在 Kimi Code CLI / Claude Code 中
+### 在 Kimi Code CLI / Claude Code / OpenClaw 中
 
 ```
 use_skill graphic-design-pro
