@@ -104,3 +104,23 @@ AI 生成的位图需转换为矢量图：
 | `scripts/create_psd.py` | 生成分层PSD | Phase 4 输出处理 |
 | `scripts/remove_watermark.py` | 去AI水印 | Phase 3/4 输出处理 |
 | `scripts/generate_image.py` | 豆包API生图封装 | Phase 3 样稿生成 |
+
+## Console Gateway 文件系统桥接
+
+当用户通过 Graphic Design Pro Console（Web UI）连接时，Console 会通过 Gateway 自动同步 `.gdpro/` 目录到工作空间。
+
+**Skill 端需要处理的 API**：
+
+| Endpoint | 作用 | Skill 响应 |
+|---------|------|-----------|
+| `/fs/read` | Console 读取工作空间文件 | 正常返回文件内容 |
+| `/fs/write` | Console 写入工作空间文件 | 正常写入，Skill 下次启动时读取 |
+| `/fs/sync-gdpro` | Console 批量同步 .gdpro/ | 写入后 Skill 按 R-CINT-1~6 解析 |
+
+**Skill 启动时自动行为**（R-CINT-1）：
+1. 检查 `{workspace}/.gdpro/designer-profile.json`
+2. 如果存在 → 读取 `preferences` / `prohibitions` → 注入 system prompt
+3. 检查 `{workspace}/.gdpro/knowledge-base.json`
+4. 如果存在 → 读取已解析 references → 注入知识库区块
+
+详见 `references/console-integration.md`

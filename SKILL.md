@@ -37,11 +37,13 @@ description: >
 | R-T3 | **子任务也触发**：如果用户的大任务中包含任何设计子环节（如"做个产品页面"→包含Banner设计），设计环节必须用本Skill | 跳过 = 设计降质为非专业输出 |
 | R-T4 | **合规审查独立触发**：用户只要求"审查这个设计/看看合不合规"时，也触发本Skill（进入Phase 5） | 不触发 = 合规审查缺失 |
 | R-T5 | **不与纯代码UI冲突**：用户要求"写一个网页/App界面"（纯代码实现）→ 用 ui-design-review / frontend-design；但若涉及品牌视觉产出（Logo/品牌色/VI规范），必须同时触发本Skill | 只用UI Skill = 品牌一致性缺失 |
+| **R-T6** | **`design gui` 命令触发**：用户输入 `design gui`（或"打开console"/"启动gui"/"design gui"）时，**不进入任何Phase**，直接执行 `python scripts/launch_console.py` 启动 Console 可视化前端 | 不识别命令 = 用户无法启动Console |
 
 **触发关键词速查（不限于这些，任何同类意图均触发）：**
 
 | 类别 | 触发词 |
 |------|--------|
+| 🖥️ Console | `design gui`、`打开console`、`启动gui`、`design gui` |
 | 🏷️ 品牌 | 品牌设计、VI、CI、品牌视觉、品牌升级、品牌重塑、企业形象、品牌手册、品牌规范 |
 | 🎨 Logo | logo、标志、商标、icon、图标、动态标识、徽标 |
 | 📦 物料 | 海报、名片、招牌、易拉宝、宣传册、折页、画册、传单、DM、菜单、Banner、主图、详情页 |
@@ -130,12 +132,59 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 | R1 | **品牌名逐字锁定**：后续所有产出必须逐字引用 brand-profile.md，不得擅自替换、缩写、意译或混用 | 产出作废，重做 |
 | R2 | **禁止自作主张改名**：不得将用户确认的品牌名"优化"为自认为更好的名字 | 严重违规 |
 | R3 | **色彩值锁定**：所有物料必须使用 brand-profile.md 中的 HEX 值 | 产出作废 |
+| **R3-C** | **Console 设计师档案优先**：如果 `.gdpro/designer-profile.json` 存在，其审美偏好覆盖默认风格建议 | 风格漂移 |
 | R4 | **字体锁定**：标题/正文字体确定后，所有物料统一使用 | 产出作废 |
 | R5 | **设计哲学锁定**：Phase 2 的设计哲学是全流程创作纲领，Phase 3-6 不得偏离 | 产出作废 |
 | R6 | **每阶段开头读 brand-profile.md**：进入新 Phase 时必须先读取确认 | 跳过 = 违规 |
 | R7 | **品牌口号锁定**：不得在不同物料中使用不同口号 | 产出作废 |
 | R8 | **逐步确认，禁止跑通流程**：每个Phase/每个核心物料完成后，必须暂停等待用户确认 | 跳过确认 = 产出无效 |
 | R9 | **合规审查前置**：出品每个物料前，先扫描 `references/design-compliance.md` 内化到prompt | 做完再查 = 违规产出 |
+
+---
+
+## 🖥️ Console 前端协议（R-CONSOLE）
+
+> **Graphic Design Pro Console 是本 Skill 的远程可视化终端，不是独立应用。**
+>
+> 违反以下规则 = Console 与 Skill 能力割裂 = 用户获得不完整/错误的设计产出。
+
+### 架构铁律
+
+| # | 规则 | 违反后果 |
+|---|------|---------|
+| R-CONSOLE-1 | **Console 不产生设计回复**：所有设计回复必须由 Skill 生成并通过 Gateway 返回。Console 禁止本地 mock、模拟或兜底回复。 | 用户收到假数据，信任崩塌 |
+| R-CONSOLE-2 | **Console 不独立执行工作流**：Phase 推进、设计哲学创建、合规审查、设计评审等全部业务逻辑由 Skill 执行。Console 只负责渲染 Skill 的输出。 | 工作流断裂，质量门禁失效 |
+| R-CONSOLE-3 | **阶段推进权归 Skill**：Console 用户点击「推进」后，必须将请求转发给 Skill。Skill 检查完成度（R8）后返回确认/拒绝。Console 不得自行推进阶段。 | 阶段跳过，产出不完整 |
+| R-CONSOLE-4 | **结构化输出渲染**：Skill 返回的 `structuredOutput`（合规报告/设计哲学/Moodboard/评审评分等），Console 必须渲染为对应的 UI 组件，不得只显示纯文本。 | 用户无法阅读结构化数据 |
+| R-CONSOLE-5 | **Context 完整性**：Console 每次调用 Skill 时，必须传递完整的 context（设计师档案 + 知识库 + 项目资产 + 当前阶段）。禁止省略或简化。 | Skill 丢失上下文，产出漂移 |
+| R-CONSOLE-6 | **双向数据同步**：Console 中的用户操作（采纳资产、修改档案、上传文件）必须实时同步到 `.gdpro/` 目录，确保 Skill 能读取最新状态。 | 数据不一致，决策基于过期信息 |
+| R-CONSOLE-7 | **离线即阻塞**：未连接 Gateway/Skill 时，Console 必须显示阻塞状态，禁止以「演示模式」「离线模式」等名义提供假功能。 | 用户误以为功能可用 |
+
+### Skill 端对 Console 的支持
+
+| 能力 | Skill 输出格式 | Console 渲染组件 |
+|------|---------------|-----------------|
+| 合规审查报告 | `structuredOutput.type: "compliance_report"` | ComplianceReport.jsx |
+| 设计哲学 | `structuredOutput.type: "design_philosophy"` | DesignPhilosophyCard.jsx |
+| Moodboard | `structuredOutput.type: "moodboard"` | MoodboardGrid.jsx |
+| 设计评审 | `structuredOutput.type: "critique"` | CritiqueScoreCard.jsx |
+| 色彩系统 | `structuredOutput.type: "color_system"` | ColorPalette.jsx |
+| VI 规范手册 | `structuredOutput.type: "vi_manual"` | VIManualViewer.jsx |
+| 品牌档案 | `syncFiles[".gdpro/brand-profile.md"]` | BrandProfileEditor.jsx |
+
+### 执行规则
+
+1. Skill 启动时，检查请求来源。如果是 `source: "console"`，按 Console 协议处理
+2. Skill 返回的每条消息，必须包含 `phase` 和 `phaseAction`（如有阶段变更）
+3. Skill 执行完任何操作后，必须将更新的数据写回 `.gdpro/` 目录
+4. Console 渲染 Skill 输出时，优先使用 `structuredOutput`，fallback 到 `text`
+5. **用户输入 `design gui` 时**：
+   - 直接执行 `python scripts/launch_console.py`
+   - 该脚本会启动一个本地 HTTP server（默认端口 3005，自动避让占用端口）
+   - 自动打开浏览器访问 Console
+   - Console 服务的是 `console/dist/` 目录下的预构建静态文件
+   - 如果 `console/dist/index.html` 不存在，提示用户先 `cd console && npm run build`
+   - 启动成功后，告知用户 Console URL 和关闭方式（Ctrl+C）
 | R10 | **包装物料双产出规则**：实体包装必须同时提供①**结构刀图/展开图**（生产用）+②**成品效果图/Mockup**（展示用），两者缺一不可 | 只有刀图 = 缺少视觉确认；只有效果图 = 无法落地生产 |
 | R11 | **素材预渲染复用规则（R-ASSET）**：Logo/品牌文字/辅助图形等跨物料重复使用的元素，必须在首次确认后**立即预渲染为高清PNG素材文件**保存到项目 `assets/` 目录；后续所有物料（包装/网站/海报/名片等）直接引用这些素材文件，不得重新绘制或让AI生图生成 | 每次重绘 = 结构漂移、比例偏差、颜色不一致；违反 = 产出作废 |
 | **R12** | **核心资产协议（R-BRAND-ASSET）**：涉及具体品牌时，按「Logo > 产品图 > UI截图 > 色值 > 字体」的识别度优先级采集真实资产，写入 `brand-spec.md`，所有产出必须引用真实资产路径。禁止用CSS剪影/SVG手画/通用渐变代替真实品牌资产（融入自huashu-design） | 用通用素材代替 = 品牌识别度归零，产出的是「任何品牌都长一样的通用设计」 |
@@ -217,8 +266,9 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 **执行铁律**：
 1. 进入任何Phase前，先读取对应的 `references/phase-N.md`
 2. 进入任何Phase前，先读取 `brand-profile.md` 确认锁定项（R6）
-3. 每个Phase完成后，暂停等用户确认（R8）
-4. 每个Phase产出必须以**可执行决策/行动**收尾，不能以纯分析收尾
+3. **Skill 启动时，先检查 `.gdpro/` 目录** — 如果存在，读取 `console-integration.md` 并按 R-CINT-1~6 注入 Console 数据（设计师档案 / 知识库 / 项目资产）
+4. 每个Phase完成后，暂停等用户确认（R8）
+5. 每个Phase产出必须以**可执行决策/行动**收尾，不能以纯分析收尾
 
 ### 🔬 Phase 1 Clarify追问法（融入PM-Clarity）
 
@@ -465,6 +515,7 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 | `references/aesthetic-learning.md` | R-A1~R-A10·偏好捕获翻译固化·审美档案·参考作品投喂 | 审美偏好时 |
 | `references/design-references.md` | 9品牌摘要索引·VI手册结构·标志规范·色彩系统·字体系统·禁令清单·设计原则·国际方法论·39个设计网站 | Phase 1/2/4 参考 |
 | `references/brand-cases/*.md` | 各品牌完整VI知识（可口可乐/天猫/MOMO等） | **按需读取**，参考design-references.md索引 |
+| `references/console-integration.md` | Console 数据互通协议·.gdpro 格式规范·设计师档案/知识库/资产同步规则 | **Skill 启动时必读**（如果检测到 .gdpro/ 目录） |
 
 ### 🔁 知识库自动扫描规则（R-KB）
 
@@ -805,7 +856,7 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 
 ## 📌 版本记录
 
-> 📌 **当前版本：v2.2.0** （2026-04-22）
+> 📌 **当前版本：v2.5.0** （2026-04-22）
 > 📋 完整变更历史见 [CHANGELOG.md](./CHANGELOG.md)
 
 ### 版本号规则（融入my-skill）

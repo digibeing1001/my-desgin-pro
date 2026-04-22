@@ -1,5 +1,79 @@
 # graphic-design-pro 更新日志
 
+## [v2.5.0] - 2026-04-22
+
+### 新增
+- **`design gui` 命令**：在 OpenClaw/WorkBuddy 等 Agent 平台输入 `design gui` 即可启动 Graphic Design Pro Console 可视化前端
+- **`scripts/launch_console.py`**：纯 Python 启动脚本，无需 Node.js 运行时。自动查找 `console/dist/` 目录 → 启动 HTTP server（默认端口 3005，自动避让占用端口）→ 自动打开浏览器
+- **R-T6 · Console 命令触发规则**：用户输入 `design gui` / `打开console` / `启动gui` 时，不进入任何 Phase，直接启动 Console
+
+### 为什么做这些变更
+- **触发原文**："在 OpenClaw 等任何安装了这个 skill 的地方，输入 design gui 即可启动 console"
+- **根因**：Console 构建完成后（`npm run build`），用户需要一个简单的方式在本地启动它。之前没有标准化的启动方式，用户需要手动 `npx serve` 或配置复杂的开发服务器
+- **修正**：提供一个零依赖的 Python 脚本，Agent 平台可直接调用；脚本自动处理端口占用、目录查找、浏览器打开
+
+### 影响
+- Console 可通过 `design gui` 一键启动，降低使用门槛
+- 不需要全局安装 `npx serve` 或任何 Node.js 工具
+- 构建产物 `console/dist/` 即开即用
+
+---
+
+## [v2.3.0] - 2026-04-22
+
+### 新增
+- **Console 数据互通协议**（`references/console-integration.md`）：定义 `.gdpro/` 数据格式规范，包含 `designer-profile.json`、`knowledge-base.json`、`projects/{id}.json` 三层数据结构
+- **R-CINT-1~6 · Console 集成规则**：Skill 启动时自动扫描 `.gdpro/` 目录，注入设计师档案/知识库/项目资产到 system prompt；资产状态以 Console 为准；阶段推进保持一致
+- **R3-C · Console 设计师档案优先**：如果 `.gdpro/designer-profile.json` 存在，其审美偏好覆盖默认风格建议
+- **Console Context Assembler**（`console/src/lib/contextAssembler.js`）：每次 Agent 对话自动组装 system prompt — 设计师档案（7维度审美）+ 知识库解析内容 + 已采纳资产 + 项目阶段
+- **Console 导出功能**：Header 新增导出按钮，可下载 `.gdpro.json` 项目数据包，供 Skill 导入以保持上下文连续性
+- **Console 阶段名修复**：`contextAssembler.js` 阶段名从 5 个补全为 6 个，与 `projects.js` 对齐
+
+### 为什么做这些变更
+- **触发原文**："这个设计师 agent 在运作的时候，是否会从设计师档案、资产库及知识库中引用内容来完成工作，尤其是将设计师档案作为设计师 agent 的主要执行参照？"
+- **根因**：1) Console 的 Agent 是 mock 回复，完全不读取设计师档案/知识库/资产库；2) Skill 与 Console 的数据格式完全不互通（Skill 用 markdown 文件，Console 用 localStorage JSON）；3) 用户在 Console 上传的竞品/规范资料，Skill 完全看不到；4) 两边 Agent 的"大脑"输入不一致，导致风格漂移
+
+### 影响
+- Console Agent 每次回复都会展示已加载的 context 摘要（设计师档案 / 知识库 / 资产 / 阶段）
+- Skill 与 Console 之间可通过 `.gdpro.json` 文件桥接数据，确保对话界面和 Web UI 的风格一致性
+- 为后续真实 LLM API 接入做好了 system prompt 组装层准备
+- **Console ↔ Skill 设计师档案统一**：`contextAssembler.js` 新增 AP 编号映射体系，Console 7 维度表单自动翻译为 Skill `brand-profile.md` 审美档案格式（| AP编号 | 维度 | 偏好 | 参数 | 来源 |）
+- **全局档案 vs 项目档案关系明确**：`.gdpro/designer-profile.json` 为全局级审美 DNA，跨项目生效；`brand-profile.md` 审美档案为项目级叠加；冲突时全局禁止项 > 项目偏好，项目锁定色值 > 全局色彩倾向
+- **Skill R-A3-C 新增**：对话采集的审美偏好必须同时写入全局 `.gdpro/designer-profile.json`，确保 Console 表单数据与 Skill 对话数据永不分裂
+- **Gateway 文件系统桥接**：Console `api.js` 新增 `/fs/read` `/fs/write` `/fs/list` `/fs/exists` `/fs/sync-gdpro` 5 个 API；`storage.js` 新增 `queueSync()` / `flushSyncQueue()` / `pullFromGateway()` / `saveToLocalAndSync()`；App 连接 Gateway 后自动双向同步 `.gdpro/` 数据
+- **离线兜底机制**：Gateway 未连接时降级到 localStorage，显示「离线模式」提示，保留手动导出功能
+
+---
+
+## [v2.4.0] - 2026-04-22
+
+### 架构重构：Console 作为 Skill 远程可视化终端
+
+> **这是根本性的架构调整。** 之前 Console 是一个「独立的前端应用」，有 mock 回复、本地工作流、离线功能。现在 Console 是「Skill 的远程 GUI」，所有业务逻辑由 Skill 执行。
+
+### 变更
+- **移除 Console 所有 mock/fallback 逻辑**：`DesignerAgent.handleSend` 不再自己生成回复，失败时显示「无法连接到 Skill」错误提示
+- **移除 Console 模拟生图**：`handleGenerate` 失败时不再显示占位图，显示错误消息
+- **增加连接状态阻塞提示**：App 顶部显示红色横幅「Console 是 Skill 可视化前端，当前未连接 Skill」
+- **新增 R-CONSOLE-1~7**：Console 前端协议铁律（不产生回复/不独立执行工作流/阶段推进权归 Skill/结构化输出渲染/Context 完整性/双向同步/离线即阻塞）
+- **console-integration.md v2.0**：架构重构，明确职责划分、数据流规范、Phase 推进控制、禁止行为清单
+- **增加 `_skillData` 字段**：Skill 返回的 `structuredOutput` 通过此字段传递给 Console 渲染组件
+- **新增 CapabilityNotice 组件**：各视图显示能力边界提示（Console 可完成 vs 需 Skill 完成）
+- **新增 PhaseWorklist 组件**：当前 Phase 的工作清单，明确区分 Console 任务和 Skill 任务
+
+### 为什么做这些变更
+- **触发原文**："要明白两边的能力必须是一致的，工作流也是要一致的。Web UI 是一个前端的 GUI 界面，但依赖于 Skill 来完成运作。不应该两边在工作流上和能力上是割裂的"
+- **根因**：Console 之前作为独立应用运行，有自己的 mock 逻辑、本地决策、离线 fallback。这导致用户以为 Console 能独立完成设计工作，实际上大量核心能力（合规/设计哲学/评审/渐进式披露）完全缺失
+- **修正**：将 Console 明确定位为 Skill 的可视化终端，所有业务逻辑委托给 Skill，Console 只做 UI 渲染
+
+### 影响
+- Console 未连接 Skill 时，所有设计功能不可用（之前会显示 mock 回复误导用户）
+- Skill 必须能够接收结构化输入并返回结构化输出
+- Gateway 后端必须实现 `/chat` 接口，将请求转发给 Skill
+- 未来 Console 新增功能（合规面板、Moodboard 画布、评审评分卡）都对应 Skill 的 `structuredOutput` 渲染
+
+---
+
 ## [v2.2.0] - 2026-04-22
 
 ### 新增

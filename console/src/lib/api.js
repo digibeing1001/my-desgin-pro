@@ -1,93 +1,111 @@
-/**
- * OpenClaw Gateway API 客户端
- * 默认端口: 18789
- */
+// OpenClaw / WorkBuddy Gateway API 封装
+const API = {
+  url: null,
+  token: null,
 
-const DEFAULT_GATEWAY_URL = 'http://127.0.0.1:18789';
+  setConfig(url, token) {
+    this.url = url?.replace(/\/$/, '') || null;
+    this.token = token || null;
+  },
 
-class OpenClawAPI {
-  constructor(baseUrl = DEFAULT_GATEWAY_URL, token = '') {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
-    this.token = token;
-  }
-
-  setConfig(baseUrl, token) {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
-    this.token = token;
-  }
-
-  async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
-
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        return await response.json();
-      }
-      return await response.text();
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // 健康检查（无需认证）
-  async healthCheck() {
-    return this.request('/api/status');
-  }
-
-  // 发送消息到主会话
-  async sendMessage(message, sessionKey = 'main') {
-    return this.request(`/api/sessions/${sessionKey}/messages`, {
-      method: 'POST',
-      body: JSON.stringify({ message }),
+  async fetch(path, options = {}) {
+    if (!this.url) throw new Error('Gateway URL 未配置');
+    const res = await fetch(`${this.url}${path}`, {
+      ...options,
+      headers: {
+        ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
     });
-  }
+    if (!res.ok) {
+      const text = await res.text().catch(() => 'Unknown error');
+      throw new Error(`Gateway ${res.status}: ${text}`);
+    }
+    if (res.status === 204) return null;
+    return res.json().catch(() => null);
+  },
 
-  // 获取会话历史
-  async getSessionHistory(sessionKey = 'main') {
-    return this.request(`/api/sessions/${sessionKey}/history`);
-  }
+  async healthCheck() {
+    return this.fetch('/health');
+  },
 
-  // 列出所有会话
-  async listSessions() {
-    return this.request('/api/sessions');
-  }
+  async sendMessage(projectId, message, { llm, imageModel, systemPrompt, references, assets, action } = {}) {
+    return this.fetch('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ projectId, message, llm, imageModel, systemPrompt, references, assets, action }),
+    });
+  },
 
-  // 列出已安装 skills
-  async listSkills() {
-    return this.request('/api/skills');
-  }
-}
+  async generateImage(prompt, { model, size = '1024x1024', n = 1 } = {}) {
+    return this.fetch('/generate-image', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, model, size, n }),
+    });
+  },
 
-export const openclaw = new OpenClawAPI();
+  // ── File System Bridge (.gdpro/ sync) ──
 
-// 本地文件系统操作（通过后端代理或直接读取，MVP 阶段简化处理）
-export function saveToLocal(key, data) {
-  localStorage.setItem(`gdpro_${key}`, JSON.stringify(data));
-}
+  /**
+   * Read a file from the agent workspace via Gateway.
+   * @param {string} relPath - Relative path (e.g. '.gdpro/designer-profile.json')
+   * @returns {Promise<{content: string, exists: boolean}>}
+   */
+  async fsRead(relPath) {
+    return this.fetch('/fs/read', {
+      method: 'POST',
+      body: JSON.stringify({ path: relPath }),
+    });
+  },
 
-export function loadFromLocal(key) {
-  try {
-    return JSON.parse(localStorage.getItem(`gdpro_${key}`));
-  } catch {
-    return null;
-  }
-}
+  /**
+   * Write a file to the agent workspace via Gateway.
+   * @param {string} relPath - Relative path
+   * @param {string} content - File content (JSON string)
+   * @returns {Promise<{success: boolean, path: string}>}
+   */
+  async fsWrite(relPath, content) {
+    return this.fetch('/fs/write', {
+      method: 'POST',
+      body: JSON.stringify({ path: relPath, content }),
+    });
+  },
+
+  /**
+   * List directory contents.
+   * @param {string} relPath - Directory path
+   * @returns {Promise<{entries: Array<{name: string, type: 'file'|'dir'}>}>}
+   */
+  async fsList(relPath) {
+    return this.fetch('/fs/list', {
+      method: 'POST',
+      body: JSON.stringify({ path: relPath }),
+    });
+  },
+
+  /**
+   * Check if a file exists.
+   * @param {string} relPath
+   * @returns {Promise<{exists: boolean}>}
+   */
+  async fsExists(relPath) {
+    return this.fetch('/fs/exists', {
+      method: 'POST',
+      body: JSON.stringify({ path: relPath }),
+    });
+  },
+
+  /**
+   * Batch sync .gdpro/ directory to workspace.
+   * @param {Object} files - Map of relPath -> content
+   * @returns {Promise<{success: boolean, written: string[]}>}
+   */
+  async fsSyncGdpro(files) {
+    return this.fetch('/fs/sync-gdpro', {
+      method: 'POST',
+      body: JSON.stringify({ files }),
+    });
+  },
+};
+
+export const openclaw = API;

@@ -2,7 +2,7 @@
 
 > 专业平面设计与VI视觉识别系统生成技能 | AI-Powered Brand Design & VI System Generator
 
-[![Version](https://img.shields.io/badge/version-v2.2.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
+[![Version](https://img.shields.io/badge/version-v2.5.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![AI Models](https://img.shields.io/badge/AI%20Models-16%2B-orange.svg)](#-ai生图模型)
 [![Compliance](https://img.shields.io/badge/Compliance-14%20Industries-red.svg)](#-合规审查)
@@ -167,7 +167,7 @@
 
 ---
 
-## 🎨 审美方法论（v2.1 新增）
+## 🎨 审美方法论
 
 Graphic Design Pro 融合了多个顶级设计方法论，确保每次产出都有审美底线：
 
@@ -235,107 +235,119 @@ graphic-design-pro/
 ├── SKILL.md                       # 主技能定义（路由+规则+硬约束）
 ├── README.md                      # 本文件
 ├── CHANGELOG.md                   # 变更日志
-├── AGENTS.md                      # Agent 工作规范
 │
-├── references/                    # 参考文档 (20个)
-│   ├── phase-1.md                 # Phase 1: 需求追问
-│   ├── phase-2.md                 # Phase 2: 竞品分析+设计哲学
-│   ├── phase-3.md                 # Phase 3: 样稿生成
-│   ├── phase-4.md                 # Phase 4: VI物料扩展
-│   ├── phase-5.md                 # Phase 5: 合规审查
-│   ├── phase-6.md                 # Phase 6: 落地指导
-│   ├──
-│   ├── ai-image-limitations.md    # AI生图能力边界（技术原理/漂移根因/3D限制/自检清单）
-│   ├── anti-ai-slop.md            # 反AI Slop清单（huashu-design）
-│   ├── taste-anchors.md           # 品位锚点（huashu-design）
-│   ├── design-philosophies.md     # 13种设计哲学风格库
-│   ├── algorithmic-art-guide.md   # 算法艺术方法论（Anthropic）
-│   ├── frontend-design-aesthetics.md  # 前端审美方法论（Anthropic）
-│   ├── external-resources.md      # 50+外部资源索引（awesome-design）
-│   ├── brand-spec.md              # 品牌资产规范模板
-│   ├── evolution-log.md           # 进化日志（E-001~E-013）
-│   ├──
-│   ├── image-models.md            # AI生图模型全览 + 一致性与Seed控制
-│   ├── design-compliance.md       # 合规审查清单（14行业）
-│   ├── design-aesthetics.md       # 审美参照+五维评审评分标准
-│   ├── vi-materials.md            # 100+物料清单
-│   ├── vi-design-toolkit.md       # VI设计工具包
-│   ├── skill-self-evolution.md    # 自进化机制
-│   ├── aesthetic-learning.md      # 审美学习
-│   ├── design-references.md       # 品牌案例知识库
-│   ├── api-and-tools.md           # API与工具说明
-│   └── brand-cases/               # 品牌案例
+├── references/                    # 参考文档 (20+)
+│   ├── phase-1.md ~ phase-6.md    # 6 Phase 详细指引
+│   ├── console-integration.md     # Console 数据互通协议 v2.0
+│   ├── ai-image-limitations.md    # AI生图能力边界
+│   ├── design-compliance.md       # 合规审查清单
+│   ├── image-models.md            # AI生图模型全览
+│   └── ...
 │
-├── console/                       # Web UI 控制台 (React + Vite + Tailwind)
+├── console/                       # Web UI 控制台 (React 19 + Vite 6 + Tailwind v4)
 │   ├── src/
 │   │   ├── components/            # React 组件
-│   │   ├── hooks/                 # 自定义 Hooks
-│   │   ├── styles/                # 全局样式
-│   │   └── lib/                   # API 客户端
-│   ├── package.json
-│   └── vite.config.js
+│   │   │   ├── outputs/           # 结构化输出渲染组件
+│   │   │   │   ├── ComplianceReport.jsx
+│   │   │   │   ├── DesignPhilosophyCard.jsx
+│   │   │   │   ├── MoodboardGrid.jsx
+│   │   │   │   ├── CritiqueScoreCard.jsx
+│   │   │   │   ├── ColorPalette.jsx
+│   │   │   │   └── VIManualViewer.jsx
+│   │   │   ├── DesignerAgent.jsx  # 主对话界面
+│   │   │   ├── AssetLibrary.jsx   # 资产库
+│   │   │   ├── ReferenceLibrary.jsx # 知识库
+│   │   │   ├── DesignerProfile.jsx # 设计师档案
+│   │   │   ├── Sidebar.jsx        # 侧边栏 + 连接状态
+│   │   │   └── ...
+│   │   ├── lib/
+│   │   │   ├── contextAssembler.js # System Prompt 组装器
+│   │   │   ├── api.js             # Gateway API 客户端
+│   │   │   ├── storage.js         # localStorage + Gateway 同步
+│   │   │   ├── phaseGuard.js      # 6 Phase 阶段守卫
+│   │   │   └── parser.js          # PDF/OCR/文本解析
+│   │   └── data/                  # 静态数据
+│   ├── dist/                      # 构建产物（预构建，可直接运行）
+│   └── package.json
+│
+├── scripts/                       # 工具脚本
+│   └── launch_console.py          # 一键启动 Console（零依赖）
 │
 ├── dependencies/                  # 内置依赖（7个，复制即用）
-│   ├── canvas-design/             # 设计哲学+81 OFL字体
-│   ├── brand-cog/                 # 品牌战略
-│   ├── design-critique/           # 11维设计评审
-│   ├── ui-design-review/          # 10维视觉评审
-│   ├── svg-draw/                  # 矢量绘制
-│   ├── color-palette/             # 色彩提取
-│   └── pptx/                      # PPT生成
+│   ├── canvas-design/
+│   ├── brand-cog/
+│   ├── design-critique/
+│   ├── ui-design-review/
+│   ├── svg-draw/
+│   ├── color-palette/
+│   └── pptx/
 │
 └── assets/                        # 资源目录
 ```
 
 ---
 
-## 🖥️ Graphic Design Pro Console（本地 Web UI）
+## 🖥️ Graphic Design Pro Console（可视化前端）
 
-除了对话式交互，我们还提供了一个**本地 Web UI 控制台**，通过可视化界面操作整个设计工作流。
+Console 是 **Graphic Design Pro Skill 的远程可视化终端**，不是独立应用。所有设计能力由 Skill 提供，Console 负责渲染 Skill 的输出、收集用户输入。
 
 ### 架构
 
 ```
-浏览器 (localhost:3000)
-    ↓ HTTP
-Console Server (React + Vite)
-    ↓ HTTP REST API
-OpenClaw Gateway (localhost:18789)
-    ↓ Internal API
-OpenClaw Agent Runtime (graphic-design-pro skill)
-    ↓
-用户配置的 LLM
+┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+│   Console   │─────→│   Gateway   │─────→│    Skill    │
+│  (Web GUI)  │      │  (HTTP API) │      │ (业务引擎)  │
+└─────────────┘      └─────────────┘      └─────────────┘
 ```
 
 **特点**：
-- 不脱离 OpenClaw 运行，LLM 调用完全走 OpenClaw
-- 跨平台（Windows/Mac/Linux），只需浏览器
-- 三栏布局：Phase 导航 / 对话面板 / 资产预览
-- 暗色编辑风界面（Playfair Display + JetBrains Mono + Noto Sans SC）
+- Console 不生成设计回复、不模拟工作流、不产生 mock 数据
+- 所有业务逻辑（追问/分析/评审/合规/输出）由 Skill 执行
+- Console 通过 Gateway 双向同步 `.gdpro/` 数据
+- 支持 6 种结构化输出渲染：合规报告 / 设计哲学 / Moodboard / 评审评分 / 色彩系统 / VI 手册
 
-### 启动 Console
+### 启动方式
+
+**方式一：命令启动（推荐）**
+
+在 OpenClaw / WorkBuddy 等 Agent 平台中输入：
+
+```
+design gui
+```
+
+Agent 会自动执行 `python scripts/launch_console.py` 启动 Console。
+
+**方式二：手动启动**
 
 ```bash
+# 零依赖启动（使用预构建产物）
+python scripts/launch_console.py
+
+# 或指定端口
+python scripts/launch_console.py --port 3005
+
+# 开发模式（需 Node.js）
 cd console
 npm install
 npm run dev
 ```
 
-浏览器自动打开 `http://localhost:3000`
+浏览器自动打开 `http://localhost:3005`
 
 ### 连接配置
 
-首次使用需要配置 OpenClaw Gateway：
-1. 点击右上角设置图标
-2. 填写 Gateway 地址（默认 `http://127.0.0.1:18789`）
-3. 填写 Bearer Token（通过 `openclaw config set gateway.token` 设置）
+首次使用需要配置 Gateway：
+1. 点击左下角状态栏的「配置 Gateway 连接」
+2. 填写 Gateway 地址（如 `http://127.0.0.1:18789`）
+3. 填写 Bearer Token
 4. 测试连接并保存
 
 ---
 
 ## 🚀 使用方式
 
-### 在 Kimi Code CLI / Claude Code / OpenClaw 中
+### 在 OpenClaw / WorkBuddy / Kimi Code CLI 中
 
 ```
 use_skill graphic-design-pro
@@ -348,6 +360,12 @@ use_skill graphic-design-pro
 "做一个科技公司的Logo"
 "设计一套外卖包装"
 "帮我审查这个设计合不合规"
+```
+
+### 启动可视化前端
+
+```
+design gui
 ```
 
 ---
@@ -375,17 +393,19 @@ use_skill graphic-design-pro
 
 详见 [CHANGELOG.md](./CHANGELOG.md)
 
-**最新版本 v2.2.0**（2026-04-22）：
-- **R15-R18 四大铁律**：用户素材强制使用 / 产出路径分叉 / 场景真实锚定 / AI生图边界
-- **AI生图能力边界文档**：技术原理/漂移根因/3D结构限制/Prompt真相/自检清单
-- **真实场景融合工作流**：前台/门头/展墙基于真实照片的设计路径（路径C-Real）
-- **包装效果图路径修正**：从"AI生图"修正为"3D软件/专业工具/PSD样机"
-- **已有素材模式**：用户提供Logo/素材时跳过AI生成，直接入库复用
+**最新版本 v2.5.0**（2026-04-22）：
+- **Console 架构重构**：明确 Console 是 Skill 的远程可视化终端，移除所有 mock/fallback 逻辑
+- **`design gui` 一键启动**：输入命令即可启动 Console，零 Node.js 依赖
+- **Console 数据互通协议 v2.0**：`.gdpro/` 双向同步，设计师档案/知识库/项目资产实时对齐
+- **6 种结构化输出渲染**：合规报告 / 设计哲学 / Moodboard / 评审评分 / 色彩系统 / VI 手册
+- **R-CONSOLE-1~7 前端协议铁律**：不产生回复 / 不独立执行 / 阶段推进权归 Skill / 离线即阻塞
+- **文件上传自动解析入库**：R15 用户提供素材强制使用原则在 Console 端闭环
+- **Layer/Gate 渐进式披露 UI**：Phase Guard + 解锁状态可视化
 
-**上一版本 v2.1.4**（2026-04-21）：
-- 上下文溢出修复（SKILL.md 从 58.5KB 压缩至 49.2KB）
-- 进化日志拆分、重复定义集中化、Gate命名去重
-- 依赖全部打包（7个内置，复制即用）
+**上一版本 v2.4.0**（2026-04-22）：
+- R15-R18 四大铁律：用户素材强制使用 / 产出路径分叉 / 场景真实锚定 / AI生图边界
+- AI生图能力边界文档：技术原理/漂移根因/3D结构限制/Prompt真相/自检清单
+- 真实场景融合工作流：前台/门头/展墙基于真实照片的设计路径
 
 ---
 
@@ -395,4 +415,4 @@ MIT License
 
 ---
 
-> **版本**: v2.2.0 | **更新日期**: 2026-04-22 | **作者**: WorkBuddy AI Assistant
+> **版本**: v2.5.0 | **更新日期**: 2026-04-22 | **作者**: WorkBuddy AI Assistant

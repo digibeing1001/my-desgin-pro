@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { openclaw, loadFromLocal, saveToLocal } from '../lib/api';
+import { Plug, X, Check, AlertCircle } from 'lucide-react';
+import { openclaw } from '../lib/api';
+import { loadFromLocal, saveToLocal } from '../lib/storage';
 
 export default function ConnectionSetup({ isOpen, onClose, onConnect }) {
   const [url, setUrl] = useState(loadFromLocal('gateway_url') || 'http://127.0.0.1:18789');
@@ -21,7 +23,6 @@ export default function ConnectionSetup({ isOpen, onClose, onConnect }) {
     setTesting(true);
     setTestResult(null);
     openclaw.setConfig(url, token);
-
     try {
       const result = await openclaw.healthCheck();
       setTestResult({ ok: true, data: result });
@@ -41,57 +42,43 @@ export default function ConnectionSetup({ isOpen, onClose, onConnect }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md gdpro-card p-6 animate-slide-up">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-display font-semibold text-gdpro-text">连接设置</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gdpro-bg-surface transition-colors">
-            <svg className="w-5 h-5 text-gdpro-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
+      <div className="w-full max-w-md gdpro-card p-5 animate-scale-in rounded-[10px]">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Plug className="w-4 h-4 text-gdpro-accent" strokeWidth={2} />
+            <h2 className="text-[15px] font-semibold text-gdpro-text tracking-tight">连接设置</h2>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-md hover:bg-gdpro-bg-hover transition-colors">
+            <X className="w-4 h-4 text-gdpro-text-secondary" strokeWidth={2} />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
             <label className="gdpro-label">Gateway 地址</label>
-            <input
-              className="gdpro-input font-mono"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="http://127.0.0.1:18789"
-            />
-            <p className="mt-1 text-2xs text-gdpro-text-muted">OpenClaw Gateway 默认运行在 18789 端口</p>
+            <input className="gdpro-input font-mono text-[12px]" value={url}
+              onChange={(e) => setUrl(e.target.value)} placeholder="http://127.0.0.1:18789" />
+            <p className="mt-1 text-[10px] text-gdpro-text-muted">OpenClaw Gateway 默认运行在 18789 端口</p>
           </div>
 
           <div>
             <label className="gdpro-label">Bearer Token</label>
-            <input
-              className="gdpro-input font-mono"
-              type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="your-secret-token"
-            />
-            <p className="mt-1 text-2xs text-gdpro-text-muted">
-              通过 openclaw config set gateway.token 设置
-            </p>
+            <input className="gdpro-input font-mono text-[12px]" type="password" value={token}
+              onChange={(e) => setToken(e.target.value)} placeholder="your-secret-token" />
+            <p className="mt-1 text-[10px] text-gdpro-text-muted">通过 openclaw config set gateway.token 设置</p>
           </div>
 
           {testResult && (
-            <div className={`p-3 rounded-md text-sm ${testResult.ok ? 'bg-gdpro-success/10 text-gdpro-success border border-gdpro-success/20' : 'bg-gdpro-danger/10 text-gdpro-danger border border-gdpro-danger/20'}`}>
+            <div className={`p-2.5 rounded-md text-[12px] ${testResult.ok ? 'bg-gdpro-success/8 text-gdpro-success border border-gdpro-success/15' : 'bg-gdpro-danger/8 text-gdpro-danger border border-gdpro-danger/15'}`}>
               {testResult.ok ? (
                 <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />
                   <span>连接成功 — {testResult.data?.version || 'Gateway OK'}</span>
                 </div>
               ) : (
                 <div className="flex items-start gap-2">
-                  <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                  </svg>
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={2.5} />
                   <span className="break-all">{testResult.error}</span>
                 </div>
               )}
@@ -99,19 +86,13 @@ export default function ConnectionSetup({ isOpen, onClose, onConnect }) {
           )}
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={handleTest}
-            disabled={testing}
-            className="gdpro-button-secondary flex-1"
-          >
+        <div className="flex gap-2 mt-5">
+          <button onClick={handleTest} disabled={testing}
+            className="gdpro-button-secondary flex-1 text-[12px]">
             {testing ? '测试中...' : '测试连接'}
           </button>
-          <button
-            onClick={handleSave}
-            disabled={!testResult?.ok}
-            className="gdpro-button flex-1"
-          >
+          <button onClick={handleSave} disabled={!testResult?.ok}
+            className="gdpro-button flex-1 text-[12px]">
             保存并连接
           </button>
         </div>

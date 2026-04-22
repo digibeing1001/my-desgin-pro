@@ -7,9 +7,38 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { margin: 0; background: #0F0F11; color: #E8E8EC; font-family: 'Noto Sans SC', sans-serif; }
+      #root { min-height: 100vh; }
+      #debug-errors { position: fixed; top: 0; left: 0; right: 0; z-index: 99999; background: #1a1a1e; border-bottom: 2px solid #e85a5a; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; max-height: 50vh; overflow-y: auto; display: none; }
+      #debug-errors.show { display: block; }
+      #debug-errors .err-title { color: #e85a5a; font-weight: bold; margin-bottom: 8px; }
+      #debug-errors .err-item { color: #e8e8ec; margin-bottom: 4px; word-break: break-all; }
+    </style>
   </head>
   <body>
+    <div id="debug-errors"></div>
     <div id="root"></div>
+    <script>
+      (function() {
+        var errs = [];
+        var el = document.getElementById('debug-errors');
+        function show() {
+          if (!errs.length) return;
+          el.classList.add('show');
+          el.innerHTML = '<div class="err-title">⚠️ JavaScript 运行时错误 (' + errs.length + ')</div>' +
+            errs.map(function(e) { return '<div class="err-item">' + e + '</div>'; }).join('');
+        }
+        window.addEventListener('error', function(e) {
+          errs.push(e.message + ' at ' + (e.filename || '') + ':' + (e.lineno || '?'));
+          show();
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+          errs.push('Promise rejection: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+          show();
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
