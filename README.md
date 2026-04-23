@@ -2,7 +2,7 @@
 
 > 专业平面设计与VI视觉识别系统生成技能 | AI-Powered Brand Design & VI System Generator
 
-[![Version](https://img.shields.io/badge/version-v2.5.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
+[![Version](https://img.shields.io/badge/version-v3.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![AI Models](https://img.shields.io/badge/AI%20Models-16%2B-orange.svg)](#-ai生图模型)
 [![Compliance](https://img.shields.io/badge/Compliance-14%20Industries-red.svg)](#-合规审查)
@@ -258,6 +258,7 @@ graphic-design-pro/
 │   │   │   ├── AssetLibrary.jsx   # 资产库
 │   │   │   ├── ReferenceLibrary.jsx # 知识库
 │   │   │   ├── DesignerProfile.jsx # 设计师档案
+│   │   │   ├── AgentSelector.jsx  # 多 Agent 选择器
 │   │   │   ├── Sidebar.jsx        # 侧边栏 + 连接状态
 │   │   │   └── ...
 │   │   ├── lib/
@@ -271,7 +272,7 @@ graphic-design-pro/
 │   └── package.json
 │
 ├── scripts/                       # 工具脚本
-│   └── launch_console.py          # 一键启动 Console（零依赖）
+│   └── launch_console.py          # 一键启动 Console（自动检测 Agent + Gateway 代理）
 │
 ├── dependencies/                  # 内置依赖（7个，复制即用）
 │   ├── canvas-design/
@@ -335,13 +336,26 @@ npm run dev
 
 浏览器自动打开 `http://localhost:3005`
 
-### 连接配置
+### 自动连接（零配置）
 
-首次使用需要配置 Gateway：
-1. 点击左下角状态栏的「配置 Gateway 连接」
-2. 填写 Gateway 地址（如 `http://127.0.0.1:18789`）
-3. 填写 Bearer Token
-4. 测试连接并保存
+Console 启动时会**自动检测**系统中运行的 Agent Gateway：
+- 自动识别 OpenClaw / WorkBuddy / QClaw 等 Agent 工具
+- 自动读取 Agent 配置中的 Gateway 地址和 Token
+- 通过内置 **Gateway 反向代理** 绕过浏览器 CORS 限制
+- 单一运行中的 Agent → 自动直连；多个 → 弹出选择器
+
+### 连接管理
+
+连接成功后，Sidebar 底部显示 **「Agent Skill 正常运行」**，并提供：
+- **切换**：在多个 Agent 之间切换连接
+- **断开**：断开当前 Gateway 连接
+
+### 模型自动检测
+
+Console 会自动读取 Agent 配置中的实际模型列表：
+- 语言模型：显示 Agent 配置的 LLM（如 MiniMax-M2.7、doubao-seed 等）
+- 生图模型：显示 Agent 配置的实际生图模型
+- 不再显示与配置不符的预设模型（GPT-4o、Claude 等仅作备用）
 
 ---
 
@@ -393,7 +407,15 @@ design gui
 
 详见 [CHANGELOG.md](./CHANGELOG.md)
 
-**最新版本 v2.5.0**（2026-04-22）：
+**最新版本 v3.0**（2026-04-23）：
+- **自动 Agent Gateway 检测**：启动时自动发现 OpenClaw / WorkBuddy / QClaw 的 Gateway
+- **Gateway 反向代理**：内置 CORS 代理，浏览器无需处理跨域，直连零配置
+- **多 Agent 切换**：Sidebar 提供「切换/断开」按钮，支持在多个 Agent 间无缝切换
+- **模型自动检测**：从 Agent `openclaw.json` 读取实际配置的 LLM 与生图模型，不再显示不符的预设
+- **AgentSelector 组件**：多 Agent 环境下弹出选择器，显示运行状态与启动来源标记
+- **R-CONSOLE-8 自动连接协议**：从 Agent 工具启动 Console 时必须自动注入连接参数
+
+**上一版本 v2.5.0**（2026-04-22）：
 - **Console 架构重构**：明确 Console 是 Skill 的远程可视化终端，移除所有 mock/fallback 逻辑
 - **`design gui` 一键启动**：输入命令即可启动 Console，零 Node.js 依赖
 - **Console 数据互通协议 v2.0**：`.gdpro/` 双向同步，设计师档案/知识库/项目资产实时对齐
@@ -401,11 +423,6 @@ design gui
 - **R-CONSOLE-1~7 前端协议铁律**：不产生回复 / 不独立执行 / 阶段推进权归 Skill / 离线即阻塞
 - **文件上传自动解析入库**：R15 用户提供素材强制使用原则在 Console 端闭环
 - **Layer/Gate 渐进式披露 UI**：Phase Guard + 解锁状态可视化
-
-**上一版本 v2.4.0**（2026-04-22）：
-- R15-R18 四大铁律：用户素材强制使用 / 产出路径分叉 / 场景真实锚定 / AI生图边界
-- AI生图能力边界文档：技术原理/漂移根因/3D结构限制/Prompt真相/自检清单
-- 真实场景融合工作流：前台/门头/展墙基于真实照片的设计路径
 
 ---
 
@@ -415,4 +432,4 @@ MIT License
 
 ---
 
-> **版本**: v2.5.0 | **更新日期**: 2026-04-22 | **作者**: WorkBuddy AI Assistant
+> **版本**: v3.0 | **更新日期**: 2026-04-23 | **作者**: WorkBuddy AI Assistant

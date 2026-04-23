@@ -24,14 +24,52 @@ export const IMAGE_MODELS_PRESET = [
 export const EXAMPLE_LLM = { id: 'example', name: '示例模型', provider: '未配置', icon: '🔧', desc: '请在 Agent 工具中配置 API Key' };
 export const EXAMPLE_IMAGE_MODEL = { id: 'example', name: '示例模型', provider: '未配置', icon: '🔧', desc: '请在 Agent 工具中配置 API Key' };
 
-// 获取动态模型列表（未检测到则返回示例）
+// ── Detected models from Agent config (injected by launch_console.py) ──
+
+function getDetectedModels() {
+  if (typeof window !== 'undefined' && window.__MODELS__) {
+    return window.__MODELS__;
+  }
+  return null;
+}
+
+export function getDetectedLanguageModels() {
+  const detected = getDetectedModels();
+  return detected?.llm || null;
+}
+
+export function getDetectedImageModels() {
+  const detected = getDetectedModels();
+  return detected?.image || null;
+}
+
+export function getDetectedDefaults() {
+  const detected = getDetectedModels();
+  return detected?.defaults || null;
+}
+
+// 获取动态模型列表（优先使用 Agent 实际配置的模型）
 export function getLanguageModels(detected) {
+  // Priority 1: actual models from Agent config
+  const actual = getDetectedLanguageModels();
+  if (actual && actual.length > 0) {
+    const custom = getCustomModels().llm || [];
+    return [...actual, ...custom];
+  }
+  // Priority 2: preset list if detected flag is set
   const custom = getCustomModels().llm || [];
   const base = detected ? LANGUAGE_MODELS_PRESET : [EXAMPLE_LLM];
   return [...base, ...custom];
 }
 
 export function getImageModels(detected) {
+  // Priority 1: actual models from Agent config
+  const actual = getDetectedImageModels();
+  if (actual && actual.length > 0) {
+    const custom = getCustomModels().image || [];
+    return [...actual, ...custom];
+  }
+  // Priority 2: preset list if detected flag is set
   const custom = getCustomModels().image || [];
   const base = detected ? IMAGE_MODELS_PRESET : [EXAMPLE_IMAGE_MODEL];
   return [...base, ...custom];

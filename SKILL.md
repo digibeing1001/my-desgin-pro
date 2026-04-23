@@ -159,6 +159,7 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 | R-CONSOLE-5 | **Context 完整性**：Console 每次调用 Skill 时，必须传递完整的 context（设计师档案 + 知识库 + 项目资产 + 当前阶段）。禁止省略或简化。 | Skill 丢失上下文，产出漂移 |
 | R-CONSOLE-6 | **双向数据同步**：Console 中的用户操作（采纳资产、修改档案、上传文件）必须实时同步到 `.gdpro/` 目录，确保 Skill 能读取最新状态。 | 数据不一致，决策基于过期信息 |
 | R-CONSOLE-7 | **离线即阻塞**：未连接 Gateway/Skill 时，Console 必须显示阻塞状态，禁止以「演示模式」「离线模式」等名义提供假功能。 | 用户误以为功能可用 |
+| **R-CONSOLE-8** | **自动 Gateway 连接**：从 Agent 工具启动 Console 时，`launch_console.py` 必须自动检测启动来源（环境变量 → 父进程链 → 配置探测 → 健康检查），读取对应 Agent 的 Gateway 地址与 Token，并在打开浏览器时自动注入 `?gateway=&token=&env=` URL 参数。Console 前端收到注入参数后必须立即自动发起连接，禁止要求用户手动填写 Gateway 地址。 | 用户多一步操作 = 体验断裂，尤其非技术用户 |
 
 ### Skill 端对 Console 的支持
 
@@ -181,10 +182,12 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 5. **用户输入 `design gui` 时**：
    - 直接执行 `python scripts/launch_console.py`
    - 该脚本会启动一个本地 HTTP server（默认端口 3005，自动避让占用端口）
-   - 自动打开浏览器访问 Console
+   - **自动检测启动来源的 Agent 工具，读取其 Gateway 配置，在 URL 中注入 `?gateway=&token=&env=` 参数**（遵循 R-CONSOLE-8）
+   - 自动打开浏览器访问 Console（带自动连接参数）
+   - Console 收到参数后立即自动连接 Gateway，无需用户手动配置
    - Console 服务的是 `console/dist/` 目录下的预构建静态文件
    - 如果 `console/dist/index.html` 不存在，提示用户先 `cd console && npm run build`
-   - 启动成功后，告知用户 Console URL 和关闭方式（Ctrl+C）
+   - 启动成功后，告知用户 Console URL、已连接的 Gateway 和关闭方式（Ctrl+C）
 | R10 | **包装物料双产出规则**：实体包装必须同时提供①**结构刀图/展开图**（生产用）+②**成品效果图/Mockup**（展示用），两者缺一不可 | 只有刀图 = 缺少视觉确认；只有效果图 = 无法落地生产 |
 | R11 | **素材预渲染复用规则（R-ASSET）**：Logo/品牌文字/辅助图形等跨物料重复使用的元素，必须在首次确认后**立即预渲染为高清PNG素材文件**保存到项目 `assets/` 目录；后续所有物料（包装/网站/海报/名片等）直接引用这些素材文件，不得重新绘制或让AI生图生成 | 每次重绘 = 结构漂移、比例偏差、颜色不一致；违反 = 产出作废 |
 | **R12** | **核心资产协议（R-BRAND-ASSET）**：涉及具体品牌时，按「Logo > 产品图 > UI截图 > 色值 > 字体」的识别度优先级采集真实资产，写入 `brand-spec.md`，所有产出必须引用真实资产路径。禁止用CSS剪影/SVG手画/通用渐变代替真实品牌资产（融入自huashu-design） | 用通用素材代替 = 品牌识别度归零，产出的是「任何品牌都长一样的通用设计」 |

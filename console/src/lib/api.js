@@ -10,13 +10,17 @@ const API = {
 
   async fetch(path, options = {}) {
     if (!this.url) throw new Error('Gateway URL 未配置');
+    // Build headers: avoid Content-Type on GET/HEAD requests to prevent CORS preflight
+    // (some Gateways like OpenClaw do not handle OPTIONS requests)
+    const hasBody = options.body != null;
+    const headers = {
+      ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+      ...options.headers,
+    };
     const res = await fetch(`${this.url}${path}`, {
       ...options,
-      headers: {
-        ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
     if (!res.ok) {
       const text = await res.text().catch(() => 'Unknown error');

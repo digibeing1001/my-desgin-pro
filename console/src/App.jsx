@@ -6,12 +6,13 @@ import AssetLibrary from './components/AssetLibrary';
 import ReferenceLibrary from './components/ReferenceLibrary';
 import DesignerProfile from './components/DesignerProfile';
 import ConnectionSetup from './components/ConnectionSetup';
+import AgentSelector from './components/AgentSelector';
 import ErrorBoundary from './components/ErrorBoundary';
 import { openclaw } from './lib/api';
 import { saveToLocal, loadFromLocal, saveToLocalAndSync, pullFromGateway } from './lib/storage';
 import { exportGdproProject } from './lib/exportGdpro';
 import { createProject, DEMO_PROJECTS } from './data/projects';
-import { getConfiguredModels, saveModelConfig, saveCustomModels, getCustomModels, addCustomModel, removeCustomModel } from './data/modelConfig';
+import { getConfiguredModels, saveModelConfig, saveCustomModels, getCustomModels, addCustomModel, removeCustomModel, getDetectedDefaults } from './data/modelConfig';
 
 const VIEW_COMPONENTS = {
   agent: DesignerAgent,
@@ -24,7 +25,7 @@ const VIEW_COMPONENTS = {
 function getUrlParams() {
   if (typeof window === 'undefined') return {};
   const url = new URL(window.location.href);
-  return {
+  const params = {
     env: url.searchParams.get('env') || null,
     llm: url.searchParams.get('llm') || null,
     imageModel: url.searchParams.get('imageModel') || url.searchParams.get('image_model') || null,
@@ -32,7 +33,23 @@ function getUrlParams() {
     gatewayUrl: url.searchParams.get('gateway') || null,
     gatewayToken: url.searchParams.get('token') || null,
     injected: url.searchParams.get('injected') === 'true',
+    agents: null,
   };
+  // Parse base64-encoded agents list for multi-agent selection
+  const agentsB64 = url.searchParams.get('agents');
+  if (agentsB64) {
+    try {
+      const agentsJson = atob(decodeURIComponent(agentsB64));
+      params.agents = JSON.parse(agentsJson);
+    } catch (e) {
+      console.warn('[Console] Failed to parse agents param:', e);
+    }
+  }
+  // Also check for agents injected by launch_console.py into index.html
+  if (!params.agents && window.__AGENTS__ && Array.isArray(window.__AGENTS__)) {
+    params.agents = window.__AGENTS__;
+  }
+  return params;
 }
 
 // Sync model config back to parent agent
@@ -53,6 +70,16 @@ export default function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
+  // Determine if we need to show agent selector
+  // Count running agents from injected data
+  const runningAgents = urlParams.agents?.filter((a) => a.status === 'running') || [];
+  const hasGatewayInUrl = !!urlParams.gatewayUrl;
+  const hasAgentsInjected = !!(urlParams.agents && urlParams.agents.length > 0);
+
+  const [showAgentSelector, setShowAgentSelector] = useState(() => {
+    // Show selector only when multiple running agents exist and no direct gateway URL given
+    return !hasGatewayInUrl && runningAgents.length > 1;
+  });
 
   // Models — auto-injected from URL params if available
   const [llm, setLlm] = useState(() => {
@@ -94,19 +121,56 @@ export default function App() {
     return 'unknown';
   });
 
-  // Auto-connect if gateway params injected
+  // Apply detected models from Agent config
+  const applyDetectedModels = () => {
+    const defaults = getDetectedDefaults();
+    if (!defaults) return;
+    if (defaults.llm) {
+      setLlm(defaults.llm);
+      const cfg = getConfiguredModels();
+      saveModelConfig({ ...cfg, llm: defaults.llm });
+    }
+    if (defaults.image) {
+      setImageModel(defaults.image);
+      const cfg = getConfiguredModels();
+      saveModelConfig({ ...cfg, imageModel: defaults.image });
+    }
+  };
+
+  // Auto-connect if single gateway params injected or only one running agent discovered
   useEffect(() => {
     if (urlParams.gatewayUrl) {
+      // Direct gateway URL from launch_console.py (single agent mode)
       openclaw.setConfig(urlParams.gatewayUrl, urlParams.gatewayToken);
       setConnectionStatus('connecting');
       openclaw.healthCheck()
         .then(() => {
           setConnectionStatus('connected');
           setModelsDetected(true);
+          applyDetectedModels();
           // Pull .gdpro/ data from workspace on connect
           pullFromGateway().then((res) => {
             if (res.success && res.pulled?.length) {
               // Refresh projects from localStorage after pull
+              const refreshed = loadFromLocal('projects', DEMO_PROJECTS);
+              setProjects(refreshed);
+            }
+          });
+        })
+        .catch(() => { setConnectionStatus('disconnected'); });
+    } else if (runningAgents.length === 1) {
+      // Only one running agent discovered via __AGENTS__: auto-connect
+      const agent = runningAgents[0];
+      setAgentEnv(agent.env);
+      openclaw.setConfig(agent.gateway_url, agent.gateway_token);
+      setConnectionStatus('connecting');
+      openclaw.healthCheck()
+        .then(() => {
+          setConnectionStatus('connected');
+          setModelsDetected(true);
+          applyDetectedModels();
+          pullFromGateway().then((res) => {
+            if (res.success && res.pulled?.length) {
               const refreshed = loadFromLocal('projects', DEMO_PROJECTS);
               setProjects(refreshed);
             }
@@ -118,13 +182,15 @@ export default function App() {
 
   const currentProject = projects.find((p) => p.id === currentProjectId) || null;
 
-  const handleConnect = (url, token) => {
+  const handleConnect = (url, token, envName) => {
     openclaw.setConfig(url, token);
+    if (envName) setAgentEnv(envName);
     setConnectionStatus('connecting');
     openclaw.healthCheck()
       .then(() => {
         setConnectionStatus('connected');
         setModelsDetected(true);
+        applyDetectedModels();
         pullFromGateway().then((res) => {
           if (res.success && res.pulled?.length) {
             const refreshed = loadFromLocal('projects', DEMO_PROJECTS);
@@ -133,6 +199,17 @@ export default function App() {
         });
       })
       .catch(() => { setConnectionStatus('disconnected'); setModelsDetected(false); });
+  };
+
+  const handleDisconnect = () => {
+    openclaw.setConfig(null, null);
+    setConnectionStatus('disconnected');
+    setModelsDetected(false);
+    setAgentEnv('unknown');
+  };
+
+  const handleSwitchAgent = () => {
+    setShowAgentSelector(true);
   };
 
   const handleProjectCreate = useCallback((name) => {
@@ -301,6 +378,23 @@ export default function App() {
         onClose={() => setShowSettings(false)}
         onConnect={handleConnect}
       />
+
+      {showAgentSelector && (
+        <AgentSelector
+          agents={urlParams.agents}
+          currentEnv={agentEnv}
+          isConnected={connectionStatus === 'connected'}
+          onSelect={(agent) => {
+            setShowAgentSelector(false);
+            handleConnect(agent.gateway_url, agent.gateway_token, agent.env);
+          }}
+          onClose={() => setShowAgentSelector(false)}
+          onDisconnect={() => {
+            setShowAgentSelector(false);
+            handleDisconnect();
+          }}
+        />
+      )}
     </div>
   );
 }

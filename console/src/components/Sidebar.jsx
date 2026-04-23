@@ -9,13 +9,13 @@ const NAV_ITEMS = [
 ];
 
 const STATUS_CONFIG = {
-  connected: { dot: 'bg-gdpro-success', icon: Link2, label: '已连接', sub: 'Skill 运行正常', theme: 'border-gdpro-success/20 bg-gdpro-success/5' },
+  connected: { dot: 'bg-gdpro-success', icon: Link2, label: 'Agent Skill 正常运行', sub: '已连接', theme: 'border-gdpro-success/20 bg-gdpro-success/5' },
   connecting: { dot: 'bg-gdpro-accent animate-pulse', icon: Loader2, label: '连接中', sub: '正在检测 Gateway…', theme: 'border-gdpro-accent/20 bg-gdpro-accent/5' },
   disconnected: { dot: 'bg-gdpro-danger', icon: Unlink, label: '离线', sub: 'Gateway 连接失败', theme: 'border-gdpro-danger/20 bg-gdpro-danger/5' },
   unknown: { dot: 'bg-gdpro-text-muted', icon: Unlink, label: '未检测', sub: '未连接 Skill', theme: 'border-gdpro-text-muted/20 bg-gdpro-bg-surface' },
 };
 
-export default function Sidebar({ activeView, onChange, collapsed, onToggle, projects, currentProjectId, onProjectSwitch, onProjectCreate, mobileOpen, onCloseMobile, connectionStatus, onOpenSettings }) {
+export default function Sidebar({ activeView, onChange, collapsed, onToggle, projects, currentProjectId, onProjectSwitch, onProjectCreate, mobileOpen, onCloseMobile, connectionStatus, onOpenSettings, agents, currentAgentEnv, onSwitchAgent, onDisconnect }) {
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
@@ -177,6 +177,15 @@ export default function Sidebar({ activeView, onChange, collapsed, onToggle, pro
                 <div className="flex items-center gap-2 px-2.5 py-2">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${status.dot}`} />
                   <span className="text-[11px] font-semibold text-gdpro-text leading-none">{status.label}</span>
+                  {isConnected && agents && agents.length > 1 && (
+                    <button
+                      onClick={onSwitchAgent}
+                      className="ml-auto p-1 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                      title="切换 Agent"
+                    >
+                      <Settings className="w-3 h-3 text-gdpro-text-muted" strokeWidth={2} />
+                    </button>
+                  )}
                   {!isConnected && (
                     <button
                       onClick={onOpenSettings}
@@ -207,7 +216,25 @@ export default function Sidebar({ activeView, onChange, collapsed, onToggle, pro
 
                 {isConnected && (
                   <div className="px-2.5 pb-2 pt-0">
-                    <div className="text-[10px] text-gdpro-text-muted">{status.sub}</div>
+                    <div className="text-[10px] text-gdpro-text-muted mb-1.5">{status.sub}</div>
+                    <div className="flex gap-1.5">
+                      {agents && agents.length > 1 && (
+                        <button
+                          onClick={onSwitchAgent}
+                          className="flex-1 flex items-center justify-center gap-1 px-2 py-[4px] rounded-md bg-gdpro-bg-surface border border-gdpro-border hover:border-gdpro-accent/40 hover:bg-gdpro-accent/5 transition-all duration-150"
+                        >
+                          <Link className="w-3 h-3 text-gdpro-text-muted" strokeWidth={2} />
+                          <span className="text-[10px] font-medium text-gdpro-text-secondary">切换</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={onDisconnect}
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-[4px] rounded-md bg-gdpro-bg-surface border border-gdpro-border hover:border-gdpro-danger/40 hover:bg-gdpro-danger/5 transition-all duration-150"
+                      >
+                        <Unlink className="w-3 h-3 text-gdpro-text-muted" strokeWidth={2} />
+                        <span className="text-[10px] font-medium text-gdpro-text-secondary">断开</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
