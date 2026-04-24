@@ -1,5 +1,5 @@
 ---
-name: graphic-design-pro
+name: my-desgin
 description: >
   专业平面设计与VI视觉识别系统生成技能。支持多家AI生图模型（Seedream/Nano Banana/混元/GPT Image/Imagen 4/Flux 2/Ideogram/Stable Image），
   通过需求追问→竞品分析→设计哲学创建→Moodboard+样稿生成→VI物料扩展→合规审查+审美自检→落地指导的6阶段完整工作流，
@@ -8,6 +8,7 @@ description: >
   （商标法、广告法、国家通用语言文字法、著作权法、字体版权、招牌规范、食品标签、商场规范、3C认证、包装刀图等）。
   覆盖14大行业合规：医疗/酒类/烟草/教育/房产/食品/金融/化妆品/互联网/零售/母婴/汽车/服装/文旅。
   触发场景（只要命中任一条即触发，无需全部匹配）：
+  【Console启动】design gui、打开console、启动gui、gdpro、localhost:3005、设计控制台、设计台
   【品牌类】(1)品牌设计/品牌视觉/品牌升级/品牌重塑/品牌焕新/企业形象/CI/VI/品牌规范/品牌手册/品牌色/品牌字体
   (2)logo设计/标志设计/商标设计/图标设计/Icon设计/动态标识
   【物料类】(3)海报/名片/招牌/易拉宝/宣传册/折页/画册/传单/DM单/菜单设计
@@ -32,18 +33,19 @@ description: >
 
 | # | 规则 | 违反后果 |
 |---|------|---------|
-| R-T1 | **意图识别触发**：用户表达任何"做设计/出图/画/视觉/品牌"意图时，立即 `use_skill graphic-design-pro`，不用等用户说出精确术语 | 漏触发 = 用户得不到专业流程 |
+| R-T1 | **意图识别触发**：用户表达任何"做设计/出图/画/视觉/品牌"意图时，立即 `use_skill my-desgin`，不用等用户说出精确术语 | 漏触发 = 用户得不到专业流程 |
 | R-T2 | **模糊意图也触发**：用户说"帮我搞个XX""做个XX的图""设计一下XX"——即使措辞模糊，只要涉及视觉产出，即触发 | 漏触发 = 丧失专业性 |
 | R-T3 | **子任务也触发**：如果用户的大任务中包含任何设计子环节（如"做个产品页面"→包含Banner设计），设计环节必须用本Skill | 跳过 = 设计降质为非专业输出 |
 | R-T4 | **合规审查独立触发**：用户只要求"审查这个设计/看看合不合规"时，也触发本Skill（进入Phase 5） | 不触发 = 合规审查缺失 |
 | R-T5 | **不与纯代码UI冲突**：用户要求"写一个网页/App界面"（纯代码实现）→ 用 ui-design-review / frontend-design；但若涉及品牌视觉产出（Logo/品牌色/VI规范），必须同时触发本Skill | 只用UI Skill = 品牌一致性缺失 |
-| **R-T6** | **`design gui` 命令触发**：用户输入 `design gui`（或"打开console"/"启动gui"/"design gui"）时，**不进入任何Phase**，直接执行 `python scripts/launch_console.py` 启动 Console 可视化前端 | 不识别命令 = 用户无法启动Console |
+| **R-T6** | **技能加载时自动启动 Console**：本 Skill 被 `use_skill` 加载时，**自动执行**以下流程：① `python scripts/launch_console.py --status` 检测是否已运行 → ② 若未运行，`Start-Process python -ArgumentList "scripts/launch_console.py --port 3005 --silent"` 后台启动 → ③ 将 `http://localhost:3005` 作为 Console URL 返回给用户。**用户无需额外操作，技能加载即获得 Console 地址。** 用户输入 `design gui`/`打开console`/`启动gui` 时，同样执行此流程并立即用 `preview_url` 打开界面 | 技能加载后用户找不到 Console = 流程断裂 |
+| **R-T7** | **Console URL 检测触发**：当用户输入的内容包含 `localhost:3005` 或 `gdpro` 关键词时，先检测 Console 是否已运行，未运行则自动启动，然后用 `preview_url` 打开 | 用户记住地址却无法访问 |
 
 **触发关键词速查（不限于这些，任何同类意图均触发）：**
 
 | 类别 | 触发词 |
 |------|--------|
-| 🖥️ Console | `design gui`、`打开console`、`启动gui`、`design gui` |
+| 🖥️ Console | `design gui`、`打开console`、`启动gui`、`gdpro`、`localhost:3005`、`设计控制台`、`设计台` |
 | 🏷️ 品牌 | 品牌设计、VI、CI、品牌视觉、品牌升级、品牌重塑、企业形象、品牌手册、品牌规范 |
 | 🎨 Logo | logo、标志、商标、icon、图标、动态标识、徽标 |
 | 📦 物料 | 海报、名片、招牌、易拉宝、宣传册、折页、画册、传单、DM、菜单、Banner、主图、详情页 |
@@ -179,15 +181,13 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 2. Skill 返回的每条消息，必须包含 `phase` 和 `phaseAction`（如有阶段变更）
 3. Skill 执行完任何操作后，必须将更新的数据写回 `.gdpro/` 目录
 4. Console 渲染 Skill 输出时，优先使用 `structuredOutput`，fallback 到 `text`
-5. **用户输入 `design gui` 时**：
-   - 直接执行 `python scripts/launch_console.py`
-   - 该脚本会启动一个本地 HTTP server（默认端口 3005，自动避让占用端口）
-   - **自动检测启动来源的 Agent 工具，读取其 Gateway 配置，在 URL 中注入 `?gateway=&token=&env=` 参数**（遵循 R-CONSOLE-8）
-   - 自动打开浏览器访问 Console（带自动连接参数）
-   - Console 收到参数后立即自动连接 Gateway，无需用户手动配置
+5. **用户输入 `design gui` / `gdpro` / `localhost:3005` 或技能被加载时**：
+   - 执行 `python scripts/launch_console.py --status` 检测 Console 是否已运行
+   - 如果已运行：返回 URL `http://localhost:{port}`，可用 `preview_url` 直接打开
+   - 如果未运行：`Start-Process python -ArgumentList "scripts/launch_console.py --port 3005 --silent"` 后台启动 → 等待 2 秒 → 用 `preview_url` 打开 `http://localhost:3005`
    - Console 服务的是 `console/dist/` 目录下的预构建静态文件
    - 如果 `console/dist/index.html` 不存在，提示用户先 `cd console && npm run build`
-   - 启动成功后，告知用户 Console URL、已连接的 Gateway 和关闭方式（Ctrl+C）
+   - 启动成功后，告知用户 Console URL 和关闭方式（`python scripts/launch_console.py --stop`）
 | R10 | **包装物料双产出规则**：实体包装必须同时提供①**结构刀图/展开图**（生产用）+②**成品效果图/Mockup**（展示用），两者缺一不可 | 只有刀图 = 缺少视觉确认；只有效果图 = 无法落地生产 |
 | R11 | **素材预渲染复用规则（R-ASSET）**：Logo/品牌文字/辅助图形等跨物料重复使用的元素，必须在首次确认后**立即预渲染为高清PNG素材文件**保存到项目 `assets/` 目录；后续所有物料（包装/网站/海报/名片等）直接引用这些素材文件，不得重新绘制或让AI生图生成 | 每次重绘 = 结构漂移、比例偏差、颜色不一致；违反 = 产出作废 |
 | **R12** | **核心资产协议（R-BRAND-ASSET）**：涉及具体品牌时，按「Logo > 产品图 > UI截图 > 色值 > 字体」的识别度优先级采集真实资产，写入 `brand-spec.md`，所有产出必须引用真实资产路径。禁止用CSS剪影/SVG手画/通用渐变代替真实品牌资产（融入自huashu-design） | 用通用素材代替 = 品牌识别度归零，产出的是「任何品牌都长一样的通用设计」 |

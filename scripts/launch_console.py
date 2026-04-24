@@ -3,11 +3,17 @@
 Launch Graphic Design Pro Console (static file server + Gateway proxy)
 
 Usage:
-    python scripts/launch_console.py [--port 3005] [--no-open]
+    python scripts/launch_console.py [--port 3005] [--no-open] [--silent] [--status] [--stop]
 
 Serves the built console/dist/ directory over HTTP.
 Acts as a reverse proxy to Agent Gateways at /proxy/{env}/* to bypass CORS.
 Console must be built first: cd console && npm run build
+
+Modes:
+    (default)   Start the server and open browser
+    --silent    Start in background, no browser, minimal output (for auto-launch)
+    --status    Check if server is running, print URL and exit
+    --stop      Stop a running server via PID file
 """
 import argparse
 import json
@@ -23,12 +29,107 @@ import threading
 import webbrowser
 import base64
 import re
+import signal
 
 # Fix Windows terminal encoding for emoji output
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
+
+
+# ─── PID file management ──────────────────────────────────────
+def get_pid_file_path():
+    """Return path to PID file (stored in user home to survive across sessions)."""
+    return Path.home() / ".gdpro" / "console.pid"
+
+
+def get_url_file_path():
+    """Return path to URL file (stores the running console URL)."""
+    return Path.home() / ".gdpro" / "console.url"
+
+
+def write_pid_file(port, pid=None):
+    """Write PID and port info to PID file."""
+    pid_dir = Path.home() / ".gdpro"
+    pid_dir.mkdir(parents=True, exist_ok=True)
+    pid_file = get_pid_file_path()
+    url_file = get_url_file_path()
+    actual_pid = pid or os.getpid()
+    pid_file.write_text(f"{actual_pid}\n{port}\n", encoding="utf-8")
+    url_file.write_text(f"http://localhost:{port}\n", encoding="utf-8")
+
+
+def read_pid_file():
+    """Read PID and port from PID file. Returns (pid, port) or (None, None)."""
+    pid_file = get_pid_file_path()
+    if not pid_file.exists():
+        return None, None
+    try:
+        parts = pid_file.read_text(encoding="utf-8").strip().split("\n")
+        pid = int(parts[0])
+        port = int(parts[1]) if len(parts) > 1 else None
+        return pid, port
+    except (ValueError, IndexError):
+        return None, None
+
+
+def is_pid_running(pid):
+    """Check if a process with given PID is running (cross-platform)."""
+    if pid is None:
+        return False
+    try:
+        if sys.platform == "win32":
+            # On Windows, os.kill with signal 0 doesn't work the same way
+            result = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+                capture_output=True, text=True, timeout=5
+            )
+            return str(pid) in result.stdout
+        else:
+            os.kill(pid, 0)
+            return True
+    except (ProcessLookupError, PermissionError, OSError):
+        return False
+
+
+def cleanup_pid_file():
+    """Remove PID and URL files."""
+    for f in [get_pid_file_path(), get_url_file_path()]:
+        try:
+            f.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
+def check_console_running():
+    """
+    Check if a Console server is already running.
+    Returns (is_running: bool, url: str or None, port: int or None)
+    """
+    pid, port = read_pid_file()
+    if pid is None:
+        return False, None, None
+
+    if not is_pid_running(pid):
+        # Stale PID file, clean up
+        cleanup_pid_file()
+        return False, None, None
+
+    # PID is running, verify it's actually our server by health check
+    if port:
+        url = f"http://localhost:{port}"
+        try:
+            req = urllib.request.Request(url, method="GET", headers={"Accept": "text/html"})
+            with urllib.request.urlopen(req, timeout=2) as resp:
+                if resp.status == 200:
+                    return True, url, port
+        except Exception:
+            pass
+
+    # PID exists but health check failed — might be a different process
+    # Don't clean up (could be starting up), but report as not running
+    return False, None, None
 
 
 def find_dist_dir():
@@ -411,15 +512,128 @@ class ProxyHandler(SimpleHTTPRequestHandler):
             self.send_error(502, msg)
 
 
+def build_console_url(base_url, agents, args):
+    """Build the full Console URL with appropriate query parameters."""
+    running_agents = [a for a in agents if a["status"] == "running"]
+    url = base_url
+
+    if args.gateway:
+        params = [f"gateway={urllib.parse.quote(args.gateway, safe=':/')}"]
+        if args.token:
+            params.append(f"token={urllib.parse.quote(args.token, safe='')}")
+        if args.env:
+            params.append(f"env={urllib.parse.quote(args.env, safe='')}")
+        url = f"{url}?{'&'.join(params)}"
+    elif len(running_agents) == 1:
+        agent = running_agents[0]
+        proxy_url = f"/proxy/{agent['env']}"
+        params = [f"gateway={urllib.parse.quote(proxy_url, safe='/')}"]
+        if agent.get("gateway_token"):
+            params.append(f"token={urllib.parse.quote(agent['gateway_token'], safe='')}")
+        params.append(f"env={urllib.parse.quote(agent['env'], safe='')}")
+        url = f"{url}?{'&'.join(params)}"
+    elif len(agents) > 0:
+        proxy_agents = []
+        for a in agents:
+            proxy_agents.append({
+                "env": a["env"],
+                "gateway_url": f"/proxy/{a['env']}",
+                "gateway_token": a["gateway_token"],
+                "status": a["status"],
+                "preferred": a.get("preferred", False),
+            })
+        agents_payload = base64.b64encode(json.dumps(proxy_agents).encode("utf-8")).decode("utf-8")
+        params = [f"agents={urllib.parse.quote(agents_payload, safe='')}"]
+        url = f"{url}?{'&'.join(params)}"
+
+    return url
+
+
+def print_startup_info(dist_dir, agents, url, args, silent=False):
+    """Print startup information (suppressed in silent mode)."""
+    if silent:
+        return
+
+    running_agents = [a for a in agents if a["status"] == "running"]
+
+    print(f"\n🎨 Graphic Design Pro Console")
+    print(f"   Serving: {dist_dir}")
+
+    if args.gateway:
+        print(f"   Agent:   {args.env or 'unknown'} (override)")
+        print(f"   Gateway: {args.gateway}")
+    elif len(running_agents) == 1:
+        agent = running_agents[0]
+        print(f"   Agent:   {agent['env']}")
+        print(f"   Gateway: {agent['gateway_url']} (proxied via /proxy/{agent['env']})")
+        if agent.get("gateway_token"):
+            mask = "*" * min(len(agent["gateway_token"]), 8)
+            print(f"   Token:   {mask}")
+    elif len(agents) > 0:
+        print(f"   Detected {len(agents)} agent(s):")
+        for a in agents:
+            status_icon = "🟢" if a["status"] == "running" else "⚪"
+            pref = " ← 启动来源" if a.get("preferred") else ""
+            print(f"     {status_icon} {a['env']:12} {a['gateway_url']} → /proxy/{a['env']}{pref}")
+    else:
+        print(f"   ⚠️  未检测到任何 Agent Gateway")
+
+    print(f"   URL:     {url}")
+    print(f"   Press Ctrl+C to stop\n")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Launch Graphic Design Pro Console")
     parser.add_argument("--port", type=int, default=3005, help="Server port (default: 3005)")
     parser.add_argument("--no-open", action="store_true", help="Don't open browser automatically")
+    parser.add_argument("--silent", action="store_true", help="Silent mode: start in background, no browser, minimal output")
+    parser.add_argument("--status", action="store_true", help="Check if Console server is running, print URL and exit")
+    parser.add_argument("--stop", action="store_true", help="Stop a running Console server")
     parser.add_argument("--gateway", type=str, default=None, help="Gateway URL override")
     parser.add_argument("--token", type=str, default=None, help="Gateway token override")
     parser.add_argument("--env", type=str, default=None, help="Agent environment override")
     args = parser.parse_args()
 
+    # ─── Handle --status ──────────────────────────────────
+    if args.status:
+        is_running, url, port = check_console_running()
+        if is_running:
+            print(f"RUNNING|{url}|{port}")
+        else:
+            print("STOPPED")
+        sys.exit(0 if is_running else 1)
+
+    # ─── Handle --stop ────────────────────────────────────
+    if args.stop:
+        pid, port = read_pid_file()
+        if pid is None or not is_pid_running(pid):
+            cleanup_pid_file()
+            print("Console is not running.")
+            sys.exit(0)
+        try:
+            if sys.platform == "win32":
+                subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True, timeout=5)
+            else:
+                os.kill(pid, signal.SIGTERM)
+            print(f"Console (PID {pid}) stopped.")
+        except Exception as e:
+            print(f"Failed to stop Console: {e}", file=sys.stderr)
+        finally:
+            cleanup_pid_file()
+        sys.exit(0)
+
+    # ─── Check if already running ─────────────────────────
+    is_running, existing_url, existing_port = check_console_running()
+    if is_running:
+        if args.silent:
+            print(f"ALREADY_RUNNING|{existing_url}")
+        else:
+            print(f"\n🎨 Console already running at {existing_url}")
+            if not args.no_open:
+                webbrowser.open(existing_url)
+        sys.exit(0)
+
+    # ─── Start the server ─────────────────────────────────
     dist_dir = find_dist_dir()
     if not dist_dir:
         print("❌ Error: console/dist/index.html not found.", file=sys.stderr)
@@ -444,86 +658,41 @@ def main():
         agent_map[a["env"]] = a["gateway_url"]
     ProxyHandler.agent_map = agent_map
 
+    # Write PID file before starting server
+    write_pid_file(port)
+
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", port), ProxyHandler) as httpd:
-        # Build base URL
-        url = f"http://localhost:{port}"
+        base_url = f"http://localhost:{port}"
+        url = build_console_url(base_url, agents, args)
 
-        # Auto-detect or use override gateway params
-        running_agents = [a for a in agents if a["status"] == "running"]
+        print_startup_info(dist_dir, agents, url, args, silent=args.silent)
 
-        # Determine injection strategy
-        if args.gateway:
-            # Manual override: inject single gateway
-            params = []
-            params.append(f"gateway={urllib.parse.quote(args.gateway, safe=':/')}")
-            if args.token:
-                params.append(f"token={urllib.parse.quote(args.token, safe='')}")
-            if args.env:
-                params.append(f"env={urllib.parse.quote(args.env, safe='')}")
-            url = f"{url}?{'&'.join(params)}"
-            print(f"\n🎨 Graphic Design Pro Console")
-            print(f"   Serving: {dist_dir}")
-            print(f"   Agent:   {args.env or 'unknown'} (override)")
-            print(f"   Gateway: {args.gateway}")
-            print(f"   URL:     {url}")
-        elif len(running_agents) == 1:
-            # Exactly one running agent: auto-connect via proxy path
-            agent = running_agents[0]
-            proxy_url = f"/proxy/{agent['env']}"
-            params = []
-            params.append(f"gateway={urllib.parse.quote(proxy_url, safe='/')}")
-            if agent.get("gateway_token"):
-                params.append(f"token={urllib.parse.quote(agent['gateway_token'], safe='')}")
-            params.append(f"env={urllib.parse.quote(agent['env'], safe='')}")
-            url = f"{url}?{'&'.join(params)}"
-            print(f"\n🎨 Graphic Design Pro Console")
-            print(f"   Serving: {dist_dir}")
-            print(f"   Agent:   {agent['env']}")
-            print(f"   Gateway: {agent['gateway_url']} (proxied via {proxy_url})")
-            if agent.get("gateway_token"):
-                mask = "*" * min(len(agent["gateway_token"]), 8)
-                print(f"   Token:   {mask}")
-            print(f"   URL:     {url}")
-        elif len(agents) > 0:
-            # Multiple agents or none running: inject proxy agents list for frontend selection
-            proxy_agents = []
-            for a in agents:
-                proxy_agents.append({
-                    "env": a["env"],
-                    "gateway_url": f"/proxy/{a['env']}",
-                    "gateway_token": a["gateway_token"],
-                    "status": a["status"],
-                    "preferred": a.get("preferred", False),
-                })
-            agents_payload = base64.b64encode(json.dumps(proxy_agents).encode("utf-8")).decode("utf-8")
-            params = []
-            params.append(f"agents={urllib.parse.quote(agents_payload, safe='')}")
-            url = f"{url}?{'&'.join(params)}"
-            print(f"\n🎨 Graphic Design Pro Console")
-            print(f"   Serving: {dist_dir}")
-            print(f"   Detected {len(agents)} agent(s):")
-            for a in agents:
-                status_icon = "🟢" if a["status"] == "running" else "⚪"
-                pref = " ← 启动来源" if a.get("preferred") else ""
-                print(f"     {status_icon} {a['env']:12} {a['gateway_url']} → /proxy/{a['env']}{pref}")
-            print(f"   URL:     {url}")
-        else:
-            # No agents found at all
-            print(f"\n🎨 Graphic Design Pro Console")
-            print(f"   Serving: {dist_dir}")
-            print(f"   ⚠️  未检测到任何 Agent Gateway")
-            print(f"   URL:     {url}")
+        if args.silent:
+            # Silent mode: just print the URL for programmatic consumption
+            print(f"STARTED|{base_url}")
 
-        print(f"   Press Ctrl+C to stop\n")
-
-        if not args.no_open:
+        # Open browser unless --no-open or --silent
+        if not args.no_open and not args.silent:
             threading.Timer(0.5, lambda: webbrowser.open(url)).start()
+
+        # Register cleanup on exit
+        def cleanup_on_exit(*_args):
+            cleanup_pid_file()
+            sys.exit(0)
+
+        signal.signal(signal.SIGTERM, cleanup_on_exit)
+        try:
+            signal.signal(signal.SIGINT, cleanup_on_exit)
+        except (OSError, ValueError):
+            pass
 
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
-            print("\n👋 Console server stopped.")
+            if not args.silent:
+                print("\n👋 Console server stopped.")
+            cleanup_pid_file()
 
 
 if __name__ == "__main__":

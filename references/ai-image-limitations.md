@@ -1,6 +1,6 @@
-# AI 生图能力边界与适用场景
+﻿# AI 生图能力边界与适用场景
 
-> 本文档明确 graphic-design-pro skill 中 AI 生图模型的**能力边界**、**物理限制**和**适用场景**。
+> 本文档明确 my-desgin skill 中 AI 生图模型的**能力边界**、**物理限制**和**适用场景**。
 > **核心原则：AI 生图是创意生成工具，不是精确设计工具，更不是 3D 渲染引擎。**
 > 违反本文档的边界建议 = 技术路径错误，无法通过"更好的 prompt"解决。
 
@@ -208,4 +208,4 @@ AI "想象"一个"看起来像盒子的东西"
 
 ---
 
-*本文档与 `references/image-models.md`（模型参数）、`references/design-aesthetics.md`（审美规范）共同构成 graphic-design-pro 的完整技术决策体系。*
+*本文档与 `references/image-models.md`（模型参数）、`references/design-aesthetics.md`（审美规范）共同构成 my-desgin 的完整技术决策体系。*

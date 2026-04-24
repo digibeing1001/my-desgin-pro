@@ -40,7 +40,7 @@ pres.writeFile({ fileName: "output.pptx" });
 
 ### 2. 品牌VI规范手册PPT模板
 
-VI手册标准章节结构（适配graphic-design-pro Phase 6交付）：
+VI手册标准章节结构（适配my-desgin Phase 6交付）：
 
 ```
 Slide 1:  封面（品牌名+Logo+版本号+日期）

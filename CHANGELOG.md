@@ -1,4 +1,4 @@
-# graphic-design-pro 更新日志
+# my-desgin 更新日志
 
 ## [v2.5.0] - 2026-04-22
 
