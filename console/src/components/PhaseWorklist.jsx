@@ -106,10 +106,18 @@ export default function PhaseWorklist({ currentPhase, skillTasks }) {
   const totalCount = info.tasks.length;
 
   return (
-    <div className="shrink-0 mx-3 mb-2 rounded-md border border-gdpro-border bg-gdpro-bg-elevated overflow-hidden">
+    <div
+      className="shrink-0 mx-3 mb-2 rounded-[14px] overflow-hidden"
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+      }}
+    >
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-left"
+        className="w-full flex items-center gap-2 px-3 py-2 text-left"
       >
         <ClipboardList className="w-3.5 h-3.5 text-gdpro-accent shrink-0" strokeWidth={2} />
         <span className="text-[11px] font-semibold text-gdpro-text">

@@ -19,9 +19,10 @@ function ModelDropdown({ label, selected, onSelect, icon: Icon, isDetected, onCo
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 px-2 py-[3px] rounded-md text-[11px] transition-colors border ${
-          open ? 'border-gdpro-info bg-gdpro-info/10 text-gdpro-info' : 'border-gdpro-border bg-gdpro-bg-surface text-gdpro-text-secondary hover:text-gdpro-text hover:border-gdpro-border-light'
+        className={`flex items-center gap-1.5 px-2 py-[3px] rounded-lg text-[11px] transition-all duration-150 border ${
+          open ? 'text-gdpro-accent' : 'text-gdpro-text-secondary hover:text-gdpro-text'
         }`}
+        style={open ? { background: 'rgba(45,212,191,0.1)', borderColor: 'rgba(45,212,191,0.2)' } : { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)' }}
       >
         <Icon className="w-3 h-3" strokeWidth={2} />
         <span className="hidden sm:inline max-w-[80px] truncate font-medium">{selectedModel?.name}</span>
@@ -36,7 +37,7 @@ function ModelDropdown({ label, selected, onSelect, icon: Icon, isDetected, onCo
           <div className="px-2.5 py-1.5 text-[10px] font-semibold text-gdpro-text-muted uppercase tracking-wider">{label}</div>
 
           {!isDetected && (
-            <div className="px-2.5 py-1.5 bg-gdpro-accent-dim/30">
+            <div className="px-2.5 py-1.5" style={{ background: 'rgba(45,212,191,0.06)' }}>
               <p className="text-[11px] text-gdpro-text-secondary leading-relaxed">
                 当前显示为示例模型。请在 Agent 工具中配置 API Key。
               </p>
@@ -48,11 +49,12 @@ function ModelDropdown({ label, selected, onSelect, icon: Icon, isDetected, onCo
               <button
                 key={model.id}
                 onClick={() => { onSelect(model.id); setOpen(false); }}
-                className={`mac-menu-item ${selected === model.id ? 'bg-gdpro-info text-white' : ''}`}
+                className={`mac-menu-item ${selected === model.id ? 'text-gdpro-accent' : ''}`}
+                style={selected === model.id ? { background: 'rgba(45,212,191,0.1)' } : {}}
               >
                 <span className="text-sm">{model.icon}</span>
                 <div className="min-w-0 flex-1">
-                  <div className={`text-[12px] font-medium ${selected === model.id ? 'text-white' : 'text-gdpro-text'}`}>
+                  <div className={`text-[12px] font-medium ${selected === model.id ? 'text-gdpro-accent' : 'text-gdpro-text'}`}>
                     {model.name}
                   </div>
                   <div className="text-[10px] text-gdpro-text-muted">{model.provider} · {model.desc}</div>
@@ -106,7 +108,7 @@ export default function ModelSelector({ llm, imageModel, onChangeLLM, onChangeIm
           isDetected={modelsDetected}
           getModels={(d) => getLanguageModels(d)}
         />
-        <div className="w-px h-3 bg-gdpro-border" />
+        <div className="w-px h-3" style={{ background: 'rgba(255,255,255,0.08)' }} />
         <ModelDropdown
           label="生图模型"
           selected={imageModel}
@@ -119,12 +121,20 @@ export default function ModelSelector({ llm, imageModel, onChangeLLM, onChangeIm
       </div>
 
       {showConfig && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowConfig(false); }}>
-          <div className="w-full max-w-lg gdpro-card p-5 animate-scale-in max-h-[85vh] overflow-y-auto rounded-[10px]">
+          <div className="w-full max-w-lg p-5 animate-scale-in max-h-[85vh] overflow-y-auto rounded-[18px]"
+            style={{
+              background: 'rgba(15, 25, 40, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(32px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+              boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+            }}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[15px] font-semibold text-gdpro-text tracking-tight">模型配置</h2>
-              <button onClick={() => setShowConfig(false)} className="p-1 rounded-md hover:bg-gdpro-bg-hover transition-colors">
+              <button onClick={() => setShowConfig(false)} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
                 <Settings className="w-4 h-4 text-gdpro-text-secondary" strokeWidth={1.5} />
               </button>
             </div>
@@ -151,14 +161,16 @@ export default function ModelSelector({ llm, imageModel, onChangeLLM, onChangeIm
               ) : (
                 <div className="space-y-1">
                   {(customModels[configTab] || []).map((m) => (
-                    <div key={m.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-gdpro-bg-surface border border-gdpro-border">
+                    <div key={m.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
                       <span className="text-sm">{m.icon}</span>
                       <div className="flex-1 min-w-0">
                         <div className="text-[12px] font-medium text-gdpro-text truncate">{m.name}</div>
                         <div className="text-[10px] text-gdpro-text-muted">{m.provider}</div>
                       </div>
                       <button onClick={() => handleRemoveModel(configTab, m.id)}
-                        className="p-1 rounded-md hover:bg-gdpro-danger/10 text-gdpro-text-muted hover:text-gdpro-danger transition-colors">
+                        className="p-1 rounded-lg hover:bg-gdpro-danger/10 text-gdpro-text-muted hover:text-gdpro-danger transition-colors">
                         <Trash2 className="w-3 h-3" strokeWidth={2} />
                       </button>
                     </div>
@@ -167,7 +179,7 @@ export default function ModelSelector({ llm, imageModel, onChangeLLM, onChangeIm
               )}
             </div>
 
-            <div className="border-t border-gdpro-border pt-3">
+            <div className="pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
               <h3 className="text-[10px] font-semibold text-gdpro-text-muted uppercase tracking-wider mb-2">添加新模型</h3>
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">

@@ -37,8 +37,8 @@ function AssetCard({ asset, onAdopt, onReject }) {
   const isImage = asset.type === 'image' || asset.type === 'svg';
   const phaseInfo = PHASES.find((p) => p.id === asset.phase);
   return (
-    <div className="gdpro-card overflow-hidden border border-gdpro-border hover:border-gdpro-border-light transition-colors duration-100 rounded-[10px]">
-      <div className="aspect-video bg-gdpro-bg-surface relative flex items-center justify-center">
+    <div className="gdpro-card overflow-hidden hover:border-white/15 transition-all duration-200 rounded-[14px]">
+      <div className="aspect-video relative flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
         {isImage ? (
           <img src={asset.previewUrl || asset.url} alt={asset.name} className="w-full h-full object-cover" />
         ) : (
@@ -155,21 +155,25 @@ function ProjectSelector({ projects, currentProjectId, onSwitch, onCreate }) {
 function MessageBubble({ message, onButtonClick }) {
   const isUser = message.role === 'user';
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-5`}>
       {!isUser && (
-        <div className="w-6 h-6 rounded-full bg-gdpro-accent/15 flex items-center justify-center mr-2 shrink-0 mt-0.5">
-          <Sparkles className="w-3 h-3 text-gdpro-accent" strokeWidth={2.5} />
+        <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2.5 shrink-0 mt-0.5"
+          style={{ background: 'linear-gradient(135deg, rgba(45,212,191,0.2), rgba(56,189,248,0.15))', border: '1px solid rgba(45,212,191,0.2)' }}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-gdpro-accent" strokeWidth={2.5} />
         </div>
       )}
       <div className={`max-w-[90%] sm:max-w-[80%] ${isUser ? 'ml-auto' : 'mr-auto'}`}>
         {message.phase && !isUser && (
-          <div className="mb-1">
-            <span className="text-[10px] px-2 py-[2px] rounded-md bg-gdpro-accent/10 text-gdpro-accent font-medium">
+          <div className="mb-1.5">
+            <span className="text-[10px] px-2.5 py-[3px] rounded-lg font-medium"
+              style={{ background: 'rgba(45,212,191,0.1)', color: '#2DD4BF', border: '1px solid rgba(45,212,191,0.12)' }}
+            >
               Phase {message.phase} · {PHASES.find((p) => p.id === message.phase)?.name}
             </span>
           </div>
         )}
-        <div className={`${isUser ? 'bg-gdpro-info text-white px-3.5 py-2 rounded-[16px] rounded-tr-[4px]' : 'bg-gdpro-bg-elevated border border-gdpro-border px-3.5 py-2.5 rounded-[16px] rounded-tl-[4px]'} `}>
+        <div className={`${isUser ? 'bubble-user px-4 py-2.5 rounded-[20px] rounded-tr-[6px]' : 'bubble-assistant px-4 py-2.5 rounded-[20px] rounded-tl-[6px]'} `}>
           {message.isMarkdown !== false ? (
             <MarkdownRender content={message.text} />
           ) : (
@@ -202,9 +206,11 @@ function MessageBubble({ message, onButtonClick }) {
         )}
 
         {message.attachments && message.attachments.length > 0 && (
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {message.attachments.map((att, i) => (
-              <div key={i} className="flex items-center gap-1 px-2 py-[3px] bg-gdpro-bg-elevated border border-gdpro-border rounded-md text-[11px]">
+              <div key={i} className="flex items-center gap-1.5 px-2.5 py-[4px] rounded-lg text-[11px]"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
                 <Paperclip className="w-3 h-3 text-gdpro-text-muted" strokeWidth={2} />
                 <span className="text-gdpro-text-secondary truncate max-w-[100px]">{att.name}</span>
               </div>
@@ -451,7 +457,9 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
   return (
     <div className="h-full flex flex-col" onDrop={(e) => { e.preventDefault(); handleSend('', Array.from(e.dataTransfer.files)); }} onDragOver={(e) => e.preventDefault()}>
       {/* Project Selector Bar */}
-      <div className="shrink-0 px-3 py-2 border-b border-gdpro-border bg-gdpro-bg flex items-center gap-3">
+      <div className="shrink-0 px-3 py-2 flex items-center gap-3"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
+      >
         <ProjectSelector
           projects={projects}
           currentProjectId={project?.id}
@@ -478,7 +486,9 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
 
       {/* Phase Guard Notice + Progressive Disclosure Layer */}
       {project && (
-        <div className="shrink-0 px-3 py-1.5 border-b border-gdpro-border/50 bg-gdpro-bg-elevated/50">
+        <div className="shrink-0 px-3 py-1.5"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.03)' }}
+        >
           <div className="flex items-center gap-2">
             <span className="text-[10px] px-1.5 py-[1px] rounded bg-gdpro-accent/10 text-gdpro-accent font-semibold">Phase {project.currentPhase}</span>
             <span className="text-[11px] text-gdpro-text-secondary">{getPhaseDescription(project.currentPhase)}</span>
@@ -526,15 +536,17 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
       )}
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-5 space-y-1">
         {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-center space-y-4 animate-fade-in">
-            <div className="w-14 h-14 rounded-[16px] bg-gdpro-accent/10 flex items-center justify-center">
-              <Sparkles className="w-7 h-7 text-gdpro-accent" strokeWidth={1.5} />
+          <div className="h-full flex flex-col items-center justify-center text-center space-y-5 animate-fade-in">
+            <div className="w-16 h-16 rounded-[20px] flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, rgba(45,212,191,0.15), rgba(56,189,248,0.1))', border: '1px solid rgba(45,212,191,0.15)' }}
+            >
+              <Sparkles className="w-8 h-8 text-gdpro-accent" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-[15px] font-semibold text-gdpro-text mb-1">设计师 Agent</h3>
-              <p className="text-[12px] text-gdpro-text-secondary max-w-sm leading-relaxed">
+              <h3 className="text-[16px] font-semibold text-gdpro-text mb-1.5 tracking-tight">设计师 Agent</h3>
+              <p className="text-[13px] text-gdpro-text-secondary max-w-sm leading-relaxed">
                 描述你的设计需求，或上传参考图、Logo 等素材开始协作。<br/>
                 Agent 会按 6 Phase 工作流推进，所有产出需你确认后才会归档。
               </p>
@@ -542,7 +554,11 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
             <div className="flex flex-wrap justify-center gap-2 max-w-lg">
               {getQuickActions(project?.currentPhase || 1).map((s) => (
                 <button key={s} onClick={() => handleSend(s)}
-                  className="px-3 py-[5px] text-[12px] bg-gdpro-bg-elevated border border-gdpro-border rounded-md text-gdpro-text-secondary hover:text-gdpro-text hover:border-gdpro-border-light transition-colors">
+                  className="px-3.5 py-[6px] text-[12px] rounded-xl text-gdpro-text-secondary transition-all duration-200 hover:text-gdpro-text"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                >
                   {s}
                 </button>
               ))}
@@ -554,10 +570,14 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
         ))}
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="w-6 h-6 rounded-full bg-gdpro-accent/15 flex items-center justify-center mr-2 shrink-0">
-              <Loader2 className="w-3 h-3 text-gdpro-accent animate-spin" strokeWidth={2.5} />
+            <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2.5 shrink-0"
+              style={{ background: 'linear-gradient(135deg, rgba(45,212,191,0.15), rgba(56,189,248,0.1))', border: '1px solid rgba(45,212,191,0.15)' }}
+            >
+              <Loader2 className="w-3.5 h-3.5 text-gdpro-accent animate-spin" strokeWidth={2.5} />
             </div>
-            <div className="bg-gdpro-bg-elevated border border-gdpro-border px-3 py-2 rounded-[16px] rounded-tl-[4px]">
+            <div className="px-4 py-2.5 rounded-[20px] rounded-tl-[6px]"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
               <div className="flex items-center gap-2 text-gdpro-text-muted">
                 <div className="w-1.5 h-1.5 rounded-full bg-gdpro-accent animate-pulse" />
                 <span className="text-[12px]">设计师 Agent 思考中...</span>
@@ -568,7 +588,9 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
       </div>
 
       {/* Input */}
-      <div className="shrink-0 border-t border-gdpro-border bg-gdpro-bg px-3 py-2.5">
+      <div className="shrink-0 px-3 py-2.5"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
+      >
         {files.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {files.map((file, i) => (
@@ -592,9 +614,18 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
               anchorRef={textareaRef}
             />
           )}
-          <div className="flex items-end gap-2 gdpro-card p-1.5 border-gdpro-border focus-within:border-gdpro-info/50 transition-colors rounded-[10px]">
+          <div className="flex items-end gap-2 p-1.5 transition-all duration-200 rounded-[14px]"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+            }}
+            onFocusCapture={(e) => { e.currentTarget.style.borderColor = 'rgba(45,212,191,0.3)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+            onBlurCapture={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+          >
             <button type="button" onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 rounded-md hover:bg-gdpro-bg-hover transition-colors shrink-0 text-gdpro-text-muted hover:text-gdpro-text" title="上传文件">
+              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors shrink-0 text-gdpro-text-muted hover:text-gdpro-text" title="上传文件">
               <Paperclip className="w-4 h-4" strokeWidth={1.5} />
             </button>
             <input ref={fileInputRef} type="file" multiple className="hidden"
@@ -639,13 +670,21 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
 
             {/* Generate Image Panel */}
             {showGenPanel && (
-              <div className="absolute left-0 bottom-full mb-2 w-full bg-gdpro-bg-elevated border border-gdpro-border rounded-[10px] shadow-lg z-50 p-3">
+              <div className="absolute left-0 bottom-full mb-2 w-full rounded-[14px] z-50 p-3"
+                style={{
+                  background: 'rgba(15,25,40,0.9)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(24px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                }}
+              >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[12px] font-semibold text-gdpro-text flex items-center gap-1.5">
                     <Wand2 className="w-3.5 h-3.5 text-gdpro-accent" strokeWidth={2} />
                     AI 生图
                   </span>
-                  <button onClick={() => setShowGenPanel(false)} className="text-gdpro-text-muted hover:text-gdpro-text">
+                  <button onClick={() => setShowGenPanel(false)} className="text-gdpro-text-muted hover:text-gdpro-text transition-colors">
                     <X className="w-3.5 h-3.5" strokeWidth={2} />
                   </button>
                 </div>
@@ -654,7 +693,7 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
                   onChange={(e) => setGenPrompt(e.target.value)}
                   placeholder="描述你想要生成的图像..."
                   rows={2}
-                  className="w-full bg-gdpro-bg border border-gdpro-border rounded-md px-2.5 py-1.5 text-[12px] text-gdpro-text placeholder:text-gdpro-text-muted/50 resize-none outline-none focus:border-gdpro-info/50 mb-2"
+                  className="w-full rounded-xl px-2.5 py-1.5 text-[12px] text-gdpro-text placeholder:text-gdpro-text-muted/50 resize-none outline-none mb-2 gdpro-input"
                 />
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-[11px] text-gdpro-text-muted">尺寸：</span>
@@ -696,13 +735,14 @@ export default function DesignerAgent({ project, projects, onProjectSwitch, onPr
             />
             <button type="button" onClick={() => setShowGenPanel((v) => !v)}
               disabled={!project}
-              className={`p-1.5 rounded-md transition-colors shrink-0 disabled:opacity-30 ${showGenPanel ? 'bg-gdpro-accent/15 text-gdpro-accent' : 'text-gdpro-text-muted hover:text-gdpro-text hover:bg-gdpro-bg-hover'}`}
+              className={`p-1.5 rounded-lg transition-colors shrink-0 disabled:opacity-30 ${showGenPanel ? 'text-gdpro-accent' : 'text-gdpro-text-muted hover:text-gdpro-text hover:bg-white/10'}`}
+              style={showGenPanel ? { background: 'rgba(45,212,191,0.12)' } : {}}
               title="AI 生图"
             >
               <Wand2 className="w-4 h-4" strokeWidth={1.5} />
             </button>
             <button type="submit" disabled={(!input.trim() && files.length === 0) || isLoading || !project}
-              className="p-1.5 rounded-md bg-gdpro-accent text-gdpro-bg hover:bg-gdpro-accent-hover transition-colors shrink-0 disabled:opacity-30">
+              className="p-1.5 rounded-xl gdpro-button shrink-0 disabled:opacity-30 flex items-center justify-center">
               <Send className="w-4 h-4" strokeWidth={2} />
             </button>
           </div>

@@ -337,7 +337,21 @@ export default function App() {
   const ActiveComponent = VIEW_COMPONENTS[activeView] || DesignerAgent;
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-gdpro-bg text-gdpro-text overflow-hidden">
+    <div className="h-screen w-screen flex flex-col bg-transparent text-gdpro-text overflow-hidden relative">
+      {/* Animated gradient mesh background */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 opacity-40"
+          style={{
+            background: 'radial-gradient(ellipse 80% 60% at 20% 30%, rgba(45,212,191,0.12) 0%, transparent 60%), radial-gradient(ellipse 70% 50% at 80% 70%, rgba(56,189,248,0.1) 0%, transparent 60%)',
+          }}
+        />
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-20 blur-[120px]"
+          style={{ background: 'linear-gradient(135deg, #2DD4BF, #0EA5E9)' }}
+        />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-15 blur-[120px]"
+          style={{ background: 'linear-gradient(135deg, #34D399, #2DD4BF)' }}
+        />
+      </div>
       <Header
         onExport={() => exportGdproProject(currentProject)}
         onToggleMobileSidebar={() => setMobileSidebarOpen((v) => !v)}

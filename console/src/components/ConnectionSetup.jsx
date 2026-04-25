@@ -42,14 +42,27 @@ export default function ConnectionSetup({ isOpen, onClose, onConnect }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
-      <div className="w-full max-w-md gdpro-card p-5 animate-scale-in rounded-[10px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in p-4">
+      <div
+        className="w-full max-w-md p-5 animate-scale-in rounded-[18px]"
+        style={{
+          background: 'rgba(15, 25, 40, 0.85)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(32px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+        }}
+      >
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <Plug className="w-4 h-4 text-gdpro-accent" strokeWidth={2} />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, rgba(45,212,191,0.15), rgba(56,189,248,0.1))', border: '1px solid rgba(45,212,191,0.15)' }}
+            >
+              <Plug className="w-3.5 h-3.5 text-gdpro-accent" strokeWidth={2} />
+            </div>
             <h2 className="text-[15px] font-semibold text-gdpro-text tracking-tight">连接设置</h2>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-gdpro-bg-hover transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
             <X className="w-4 h-4 text-gdpro-text-secondary" strokeWidth={2} />
           </button>
         </div>
@@ -70,7 +83,12 @@ export default function ConnectionSetup({ isOpen, onClose, onConnect }) {
           </div>
 
           {testResult && (
-            <div className={`p-2.5 rounded-md text-[12px] ${testResult.ok ? 'bg-gdpro-success/8 text-gdpro-success border border-gdpro-success/15' : 'bg-gdpro-danger/8 text-gdpro-danger border border-gdpro-danger/15'}`}>
+            <div className={`p-2.5 rounded-xl text-[12px] border ${testResult.ok ? 'text-gdpro-success' : 'text-gdpro-danger'}`}
+              style={{
+                background: testResult.ok ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
+                borderColor: testResult.ok ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)',
+              }}
+            >
               {testResult.ok ? (
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />
