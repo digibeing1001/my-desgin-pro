@@ -31,7 +31,15 @@ const API = {
   },
 
   async healthCheck() {
-    return this.fetch('/health');
+    const data = await this.fetch('/health');
+    // Verify it's a real Agent Gateway, not just any HTTP 200 service
+    if (!data || typeof data !== 'object') {
+      throw new Error('Gateway 返回格式异常');
+    }
+    if (!('version' in data || 'status' in data || 'gateway' in data)) {
+      throw new Error('Gateway 响应缺少必要字段');
+    }
+    return data;
   },
 
   async sendMessage(projectId, message, { llm, imageModel, systemPrompt, references, assets, action } = {}) {

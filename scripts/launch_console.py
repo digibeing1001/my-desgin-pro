@@ -204,14 +204,21 @@ def discover_all_agents():
     agents = []
     seen_urls = {}
 
-    # Helper to check health
+    # Helper to check health — verify it's a real Agent Gateway
     def check_health(url):
         try:
             req = urllib.request.Request(
                 f"{url}/health", method="GET", headers={"Accept": "application/json"}
             )
             with urllib.request.urlopen(req, timeout=1.5) as resp:
-                return resp.status == 200
+                if resp.status != 200:
+                    return False
+                body = resp.read().decode("utf-8", errors="replace")
+                data = json.loads(body)
+                # Verify it's a real Gateway by checking known fields
+                return isinstance(data, dict) and (
+                    "version" in data or "status" in data or "gateway" in data
+                )
         except Exception:
             return False
 
