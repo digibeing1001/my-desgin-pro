@@ -38,8 +38,8 @@ description: >
 | R-T3 | **子任务也触发**：如果用户的大任务中包含任何设计子环节（如"做个产品页面"→包含Banner设计），设计环节必须用本Skill | 跳过 = 设计降质为非专业输出 |
 | R-T4 | **合规审查独立触发**：用户只要求"审查这个设计/看看合不合规"时，也触发本Skill（进入Phase 5） | 不触发 = 合规审查缺失 |
 | R-T5 | **不与纯代码UI冲突**：用户要求"写一个网页/App界面"（纯代码实现）→ 用 ui-design-review / frontend-design；但若涉及品牌视觉产出（Logo/品牌色/VI规范），必须同时触发本Skill | 只用UI Skill = 品牌一致性缺失 |
-| **R-T6** | **技能加载时自动启动 Console**：本 Skill 被 `use_skill` 加载时，**自动执行**以下流程：① `python scripts/launch_console.py --status` 检测是否已运行 → ② 若未运行，`Start-Process python -ArgumentList "scripts/launch_console.py --port 3005 --silent"` 后台启动 → ③ 将 `http://localhost:3005` 作为 Console URL 返回给用户。**用户无需额外操作，技能加载即获得 Console 地址。** 用户输入 `design gui`/`打开console`/`启动gui` 时，同样执行此流程并立即用 `preview_url` 打开界面 | 技能加载后用户找不到 Console = 流程断裂 |
-| **R-T7** | **Console URL 检测触发**：当用户输入的内容包含 `localhost:3005` 或 `gdpro` 关键词时，先检测 Console 是否已运行，未运行则自动启动，然后用 `preview_url` 打开 | 用户记住地址却无法访问 |
+| **R-T6** | **使用方式偏好询问（R-UI-CHOICE）**：本 Skill 被 `use_skill` 加载时，**禁止自动启动 Console**。**必须先询问用户**：「你想通过哪种方式使用？① **对话界面**（在这里直接文字对话，适合快速沟通和确认）② **图形界面/Console**（打开可视化前端，适合查看设计稿、Moodboard、合规报告等结构化输出）」。若用户选择**对话界面** → 继续在当前对话中执行 Skill 工作流；若用户选择**图形界面** → 执行 `python scripts/launch_console.py --status` 检测 → 未运行则后台启动 → 返回 URL。用户后续随时可输入 `design gui`/`打开console`/`启动gui` 切换为图形界面。**禁止在未经用户明确同意的情况下自动启动 Console** | 自动启动 = 用户被迫使用图形界面 = 打断原有对话习惯 |
+| **R-T7** | **Console 按需启动**：当用户**明确输入** `design gui` / `打开console` / `启动gui` / `localhost:3005` / `gdpro` 时，检测 Console 是否已运行，未运行则启动，然后用 `preview_url` 打开。**禁止在用户未主动要求时检测或启动 Console** | 未经请求自动启动 = 侵入式行为 = 用户反感 |
 
 **触发关键词速查（不限于这些，任何同类意图均触发）：**
 
@@ -184,7 +184,7 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 2. Skill 返回的每条消息，必须包含 `phase` 和 `phaseAction`（如有阶段变更）
 3. Skill 执行完任何操作后，必须将更新的数据写回 `.gdpro/` 目录
 4. Console 渲染 Skill 输出时，优先使用 `structuredOutput`，fallback 到 `text`
-5. **用户输入 `design gui` / `gdpro` / `localhost:3005` 或技能被加载时**：
+5. **用户输入 `design gui` / `gdpro` / `localhost:3005` 或明确要求打开图形界面时**（R-T6 已询问用户偏好且用户选择图形界面，或 R-T7 用户主动触发）：
    - 执行 `python scripts/launch_console.py --status` 检测 Console 是否已运行
    - 如果已运行：返回 URL `http://localhost:{port}`，可用 `preview_url` 直接打开
    - 如果未运行：`Start-Process python -ArgumentList "scripts/launch_console.py --port 3005 --silent"` 后台启动 → 等待 2 秒 → 用 `preview_url` 打开 `http://localhost:3005`
@@ -897,6 +897,18 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 > 本区域保留最新 3 条进化记录。完整历史见 `references/evolution-log.md`。
 > 每次 R-E1 触发后，在 `references/evolution-log.md` 追加条目，并更新本区域保留最新 3 条。
 
+### E-020: Console 启动从"自动"改为"询问偏好+按需启动"
+
+| 字段 | 内容 |
+|------|------|
+| 日期 | 2026-04-26 |
+| 触发原文 | "通过对话界面来调用还是通过图形界面来调用，应该要在使用前去询问用户" / "为什么我打开这个 Skill 就直接给我启动了图形界面呢？" |
+| 根因 | 1) 原 R-T6 规定 skill 加载时自动启动 Console，用户被迫使用图形界面，打断原有对话习惯；2) 用户可能更习惯在对话界面中快速沟通和确认，自动启动 Console 是侵入式行为；3) 未给用户选择权的自动启动 = 不尊重用户偏好 |
+| 修正位置 | SKILL.md 修改 R-T6 + 修改 R-T7 + Console 执行规则修正 + 版本号 v2.12.0 |
+| 修正内容 | R-T6 从"自动启动 Console"改为"使用方式偏好询问"（对话界面 vs 图形界面）；R-T7 从"自动检测启动"改为"按需启动"（只有用户明确输入关键词时才启动）；去掉"技能被加载时"的自动启动描述 |
+| 影响范围 | Skill 启动流程（R-T6/R-T7）+ 用户首次体验 |
+| 验证状态 | 🔄 待验证 |
+
 ### E-019: 启动模型选择流程修正 — 必须询问+确认，项目内默认延续，禁止擅自切换
 
 | 字段 | 内容 |
@@ -921,25 +933,13 @@ Phase 1: 需求追问(Clarify) → Phase 2: 竞品分析+设计哲学创建 → 
 | 影响范围 | 生图模型选择（R-IM）+ Phase 3-4 品牌套件/复杂排版产出 |
 | 验证状态 | 🔄 待验证 |
 
-### E-017: 品类化决策辅助 + 材质工艺指南 + 三种生图方式声明
-
-| 字段 | 内容 |
-|------|------|
-| 日期 | 2026-04-26 |
-| 触发原文 | "追问必须依据不同品类制定" / "用户无法明确回答不要直接动手" / "可以提供 UV 材质建议，说明好处和价格" / "内容生成提供三种方式：文生图、图生图、多组图生成" |
-| 根因 | 1) 原有流程缺少按品类的材质/工艺决策支持，用户说"不知道"时执行者容易直接替用户决定；2) 无市场价格参考 = 用户拿到方案后才发现超预算或材质不合适；3) 用户不知道除了文生图还有图生图和多组图生成选项；4) 不同品类（食品/化妆品/数码/礼品/服装）的材质标准和工艺偏好差异巨大 |
-| 修正位置 | SKILL.md 新增 R22+R-IM10 + 关键原则26 + 版本号 v2.9.0；新增 `references/material-guide.md`；phase-1.md Layer 2 执行规则扩展；image-models.md 多组图能力补充 |
-| 修正内容 | R22 决策辅助强制规则（不知道→顾问模式→2-3选项+理由+价格）；material-guide.md（5大品类×3档方案+工艺速查表）；R-IM10 三种生图方式强制声明（文生图/图生图/多组图生成） |
-| 影响范围 | Phase 1 追问环节（材质/工艺决策）+ Phase 3 生图方式选择（R-IM10）+ 全品类包装/印刷交付 |
-| 验证状态 | 🔄 待验证 |
-
-> 📜 更早记录（E-001~E-016）→ `references/evolution-log.md`
+> 📜 更早记录（E-001~E-017）→ `references/evolution-log.md`
 
 ---
 
 ## 📌 版本记录
 
-> 📌 **当前版本：v2.11.0** （2026-04-26）
+> 📌 **当前版本：v2.12.0** （2026-04-26）
 > 📋 完整变更历史见 [CHANGELOG.md](./CHANGELOG.md)
 
 ### 版本号规则（融入my-skill）
