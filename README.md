@@ -2,9 +2,9 @@
 
 > 专业平面设计与VI视觉识别系统生成技能 | AI-Powered Brand Design & VI System Generator
 
-[![Version](https://img.shields.io/badge/version-v3.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
+[![Version](https://img.shields.io/badge/version-v2.10.0-blue.svg)](https://github.com/digibeing1001/my-desgin-pro)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
-[![AI Models](https://img.shields.io/badge/AI%20Models-16%2B-orange.svg)](#-ai生图模型)
+[![AI Models](https://img.shields.io/badge/AI%20Models-18%2B-orange.svg)](#-ai生图模型)
 [![Compliance](https://img.shields.io/badge/Compliance-14%20Industries-red.svg)](#-合规审查)
 [![Dependencies](https://img.shields.io/badge/Dependencies-7%20Built--in-purple.svg)](#-内置依赖)
 
@@ -132,12 +132,13 @@
 | 🟡 中等 | 小型品牌套件（Logo+名片+1-2物料） | Phase 1 → Phase 2(压缩) → Phase 3 → Phase 4(精选) → Phase 5 |
 | 🔵 深度 | 完整VI系统（多物料+多场景） | 完整6阶段 |
 | 🔴 重构 | 已有品牌升级/重塑 | 深度模式 + 旧资产盘点 + 迁移策略 |
+| 🟣 产品渲染 | 产品效果图/电商主图/详情页/包装产品图/3D渲染 | Phase 1(产品访谈+参考图检查) → PIF锁定 → Phase 3(首图) → 一致性链路(多角度) → Phase 5 |
 
 ---
 
 ## 🤖 技术栈
 
-### 🤖 AI 生图模型（10家16+模型）
+### 🤖 AI 生图模型（11家18+模型）
 
 | 模型 | 特点 | 适用场景 |
 |------|------|---------|
@@ -145,11 +146,13 @@
 | Seedream 4.5 | 高精度商业设计 | 备用 |
 | Nano Banana | 快速迭代 | 初稿、快速验证 |
 | 混元 | 中文优化 | 中文品牌设计 |
-| GPT Image | 创意设计 | 概念图、艺术风格 |
+| **GPT Image 2** | 全球质量 #1 + Agentic 推理 + 多语言文本 | 复杂排版、信息图、多语言物料 |
+| GPT Image 1.5 | 创意设计 | 概念图、艺术风格 |
 | Imagen 4 | 细节表现 | 写实海报 |
 | Flux 2 | 艺术风格 | 创意视觉 |
 | Ideogram | 文字生成 | 带文字的海报 |
 | Stable Image | 稳定输出 | 标准化物料 |
+| **Lovart** | AI 设计代理、多模型编排、品牌套件生成 | 品牌套件批量产出、复杂排版、Infinite Canvas |
 
 ### 📚 内置依赖（7个，已全部打包）
 
@@ -241,7 +244,9 @@ my-desgin/
 │   ├── console-integration.md     # Console 数据互通协议 v2.0
 │   ├── ai-image-limitations.md    # AI生图能力边界
 │   ├── design-compliance.md       # 合规审查清单
-│   ├── image-models.md            # AI生图模型全览
+│   ├── image-models.md            # AI生图模型全览（11家18+模型）
+│   ├── material-guide.md          # 按品类的材质/工艺/价格决策指南
+│   ├── product-design-mode.md     # 产品渲染模式（15问访谈+PIF+一致性链路）
 │   └── ...
 │
 ├── console/                       # Web UI 控制台 (React 19 + Vite 6 + Tailwind v4)
@@ -400,6 +405,14 @@ design gui
 | 10 | **产出路径分叉** — 精确排版稿（HTML/Canvas）与 AI 概念图严格分离 |
 | 11 | **场景真实锚定** — 前台/门头/展墙必须基于真实场景照片设计 |
 | 12 | **AI 生图边界** — AI 不是渲染引擎，精确排版/3D结构/一致性场景禁止AI生图 |
+| 13 | **交付物源文件强制** — 所有交付物必须同时提供 PSD/AI/EPS + 预览/印刷文件 |
+| 14 | **HTML 不可直接印刷** — HTML 截图是参考稿，必须在 AI/PS/ID 中重绘并加印刷标记 |
+| 15 | **印刷标示线强制** — 出血线+裁切标记+套印标记+颜色条+模切/折叠线 |
+| 16 | **不知道就问，不给选项不动手** — 用户无法明确材质/工艺时，必须提供选项+理由+价格 |
+| 17 | **产品先访谈，后渲染** — 产品渲染必须先过 15 问并锁定 PIF |
+| 18 | **一致性链路保产品** — 同一产品的多视角渲染必须使用一致性链路 |
+| 19 | **三种生图方式声明** — 每次生图前必须让用户选择：文生图/图生图/多组图生成 |
+| 20 | **启动即配置** — Skill 加载时立即检测 API 配置，未配置则强制引导 |
 
 ---
 
@@ -407,13 +420,17 @@ design gui
 
 详见 [CHANGELOG.md](./CHANGELOG.md)
 
-**最新版本 v3.0**（2026-04-23）：
-- **自动 Agent Gateway 检测**：启动时自动发现 OpenClaw / WorkBuddy / QClaw 的 Gateway
-- **Gateway 反向代理**：内置 CORS 代理，浏览器无需处理跨域，直连零配置
-- **多 Agent 切换**：Sidebar 提供「切换/断开」按钮，支持在多个 Agent 间无缝切换
-- **模型自动检测**：从 Agent `openclaw.json` 读取实际配置的 LLM 与生图模型，不再显示不符的预设
-- **AgentSelector 组件**：多 Agent 环境下弹出选择器，显示运行状态与启动来源标记
-- **R-CONSOLE-8 自动连接协议**：从 Agent 工具启动 Console 时必须自动注入连接参数
+**最新版本 v2.10.0**（2026-04-26）：
+- **Lovart Design Agent 接入**：第 11 家提供商，AI 设计代理支持多模型编排 + 品牌套件批量生成 + Infinite Canvas
+- **品类化决策辅助（R22）**：用户无法明确材质/工艺时，必须提供 2–3 个选项 + 理由 + 市场参考价格
+- **材质工艺指南（material-guide.md）**：5 大品类（食品/化妆品/数码/礼品/服装）× 经济/标准/高端三档方案 + UV/烫金/覆膜工艺速查
+- **三种生图方式声明（R-IM10）**：每次生图前必须让用户选择：文生图 / 图生图 / 多组图生成
+- **产品渲染模式（🟣）**：15 问产品访谈 + PIF 锁定 + 一致性链路（R-IM9），确保同一产品多视角外观一致
+- **交付物源文件强制（R19）**：所有交付物必须同时提供 PSD/AI/EPS + 预览/印刷文件
+- **HTML 不可直接印刷（R20）**：HTML 截图是参考稿，必须在专业软件中重绘并添加完整印刷标记
+- **印刷标示线强制（R21）**：出血线 + 裁切标记 + 套印标记 + 颜色条 + 模切/折叠线
+- **启动即配置（R-IM0）**：Skill 加载时立即检测 API 配置，未配置则强制引导用户选择模型
+- **GPT Image 2 加入**：全球质量 #1 + Agentic 推理 + 2K 原生 + 多组图生成（单次 10 张）
 
 **上一版本 v2.5.0**（2026-04-22）：
 - **Console 架构重构**：明确 Console 是 Skill 的远程可视化终端，移除所有 mock/fallback 逻辑
@@ -432,4 +449,4 @@ MIT License
 
 ---
 
-> **版本**: v3.0 | **更新日期**: 2026-04-23 | **作者**: WorkBuddy AI Assistant
+> **版本**: v2.10.0 | **更新日期**: 2026-04-26 | **作者**: WorkBuddy AI Assistant
