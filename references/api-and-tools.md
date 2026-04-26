@@ -37,6 +37,9 @@ IDEOGRAM_API_KEY=ideo-...
 # 🇺🇸 Stability AI Stable Image
 STABILITY_API_KEY=sk-...
 
+# 🇺🇸 Lovart Design Agent（多模型编排：Nano Banana/Seedream/Flux/Sora）
+LOVART_API_KEY=lovart_...
+
 # === 其他工具 ===
 # 矢量化API
 VECTORIZER_API_KEY=your_vectorizer_key

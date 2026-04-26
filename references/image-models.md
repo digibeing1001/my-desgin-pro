@@ -6,7 +6,7 @@
 
 ---
 
-## 一、模型总览（10家16+模型）
+## 一、模型总览（11家18+模型）
 
 > ⚠️ DALL-E 2/3 已于 2026-05-12 停服，已移除。
 > ⚠️ Seedream 4.0 已被 4.5 取代，已移除。混元极速版太弱，已移除。
@@ -27,7 +27,9 @@
 | 12 | 🇩🇪 BFL | **Flux 2 Max** | $0.07/MP | ¥0.51/MP | 4MP | — | 超旗舰 | 🟢 在线 |
 | 13 | 🇩🇪 BFL | **Flux 2 Klein 4B** | $0.014/MP | ¥0.10/MP | 4MP | — | 草稿级 | 🟢 在线 |
 | 14 | 🇺🇸 Ideogram | **Ideogram 3.0** | $0.038~$0.113 | ¥0.27~0.81 | 2048×2048 | 1,218 | 生产级 | 🟢 在线 |
-| 15 | 🇺🇸 Stability | **Stable Image Ultra** | ~$0.030 | ¥0.22 | 1024×1024 | — | 生产级 | 🟡 老化 |
+| 15 | 🇺🇸 Ideogram | **Ideogram 3.0** | $0.038~$0.113 | ¥0.27~0.81 | 2048×2048 | 1,218 | 生产级 | 🟢 在线 |
+| 16 | 🇺🇸 Stability | **Stable Image Ultra** | ~$0.030 | ¥0.22 | 1024×1024 | — | 生产级 | 🟡 老化 |
+| 17 | 🇺🇸 Lovart | **Lovart Design Agent** | ~$0.01~0.045 | ¥0.07~0.32 | 4K(4096×4096) | — | 生产级 | 🟢 在线 |
 
 ---
 
@@ -355,6 +357,67 @@
 
 ---
 
+### 2.10 🇺🇸 Lovart — AI 设计代理（多模型编排）
+
+> Lovart 不是单一模型，而是**设计智能代理**。它自动编排 Nano Banana、Seedream、Flux、Sora 等多个模型，并具备"设计逻辑"理解能力（排版/品牌套件/图层控制）。
+
+#### Lovart Design Agent
+
+| 项目 | 详情 |
+|------|------|
+| **API端点** | `https://api.lovart.ai/v1/generate`（官方） / OpenAI 兼容格式 |
+| **SDK** | `pip install lovart` / `npm install @lovart/sdk` |
+| **模型名** | `lovart-design-agent` |
+| **认证方式** | Bearer Token（`LOVART_API_KEY`） |
+| **定价模式** | Credit 计费：1 张图 ≈ 1 credit |
+| **套餐参考** | Free: 500 credits/月 · Starter: $19/2000 credits · Basic: $32/3500 credits · Pro: $90/11000 credits |
+| **单张成本** | ~$0.01–0.045/张（取决于套餐和分辨率） |
+| **最大分辨率** | 4K(4096×4096) |
+| **特色** | Infinite Canvas + 多模型编排 + 设计逻辑理解 + 品牌套件生成 |
+
+**✅ 优势：**
+- **设计逻辑理解**：模型理解"Logo 应该放在哪里""标语如何排版""品牌色如何和谐搭配"，生成的是可编辑的设计稿而非单纯图片
+- **多模型自动编排**：根据 prompt 自动选择最适合的底层模型（Nano Banana/Seedream/Flux/Sora）
+- **品牌套件生成**：一句 prompt 可生成整套品牌 VI（Logo+名片+海报+社交媒体图）
+- **文字/排版/图层精准编辑**：支持文字修改、元素层级调整、局部重绘
+- **Infinite Canvas**：无限画布，适合大场景/多元素复杂设计
+- **国内可用**：部分节点国内直连稳定
+
+**❌ 劣势：**
+- 是代理层而非原生模型，极端场景下质量受底层模型限制
+- Credit 套餐有月度上限，高频使用需关注余额
+- 并发限制：Free(2) / Pro(10) / Enterprise(50+)
+- API 文档不如 OpenAI 完善，部分参数需实测
+
+**推荐参数**：
+```python
+import lovart
+client = lovart.Client("YOUR_LOVART_API_KEY")
+
+design = client.designs.create(
+    prompt="A minimalist coffee brand logo with warm earth tones",
+    style="minimal",
+    format="png",
+    size="2048x2048"
+)
+print(design['output_url'])
+```
+
+**💡 使用建议：**
+- **品牌套件/VI 批量生成**：Lovart 的设计逻辑理解使其在品牌物料批量产出上效率极高
+- **需要文字排版精准的场景**：Lovart 的文字渲染和排版控制优于纯文生图模型
+- **复杂多元素设计**：Infinite Canvas 适合海报/画册/详情页等复杂排版
+- **作为补充而非替代**：Lovart 与 Seedream/GPT Image 2 互补，前者强在设计逻辑和批量，后者强在单图质量和创意
+
+**API Key 获取**：
+1. 访问 https://lovart.ai
+2. 注册/登录账号
+3. 进入 Dashboard → Developer Settings
+4. 点击 Generate New API Key
+5. 设置环境变量：`$env:LOVART_API_KEY="your-key"`
+
+---
+
 ## 三、API密钥状态检测方法
 
 每次生图前，检测环境变量判断可用性：
@@ -371,6 +434,7 @@
 | `REPLICATE_API_TOKEN` | Flux 2 (Replicate) | 非空 |
 | `IDEOGRAM_API_KEY` | Ideogram 3.0 | 非空 |
 | `STABILITY_API_KEY` | Stable Image Ultra | 非空 |
+| `LOVART_API_KEY` | Lovart Design Agent | 非空 |
 
 **PowerShell检测脚本**：
 ```powershell
@@ -384,6 +448,7 @@ if ($env:OPENAI_API_KEY) { $models["GPT Image"] = "✅" } else { $models["GPT Im
 if ($env:BFL_API_KEY -or $env:FAL_KEY -or $env:REPLICATE_API_TOKEN) { $models["Flux 2"] = "✅" } else { $models["Flux 2"] = "❌" }
 if ($env:IDEOGRAM_API_KEY) { $models["Ideogram"] = "✅" } else { $models["Ideogram"] = "❌" }
 if ($env:STABILITY_API_KEY) { $models["Stable Image"] = "✅" } else { $models["Stable Image"] = "❌" }
+if ($env:LOVART_API_KEY) { $models["Lovart"] = "✅" } else { $models["Lovart"] = "❌" }
 $models.GetEnumerator() | ForEach-Object { "$($_.Key): $($_.Value)" }
 ```
 

@@ -5,6 +5,20 @@
 
 ---
 
+### E-018: 加入 Lovart Design Agent — AI 设计代理（多模型编排）
+
+| 字段 | 内容 |
+|------|------|
+| 日期 | 2026-04-26 |
+| 触发原文 | "加入 lovart api 调用 https://lovart.notion.site/Lovart-OpenClaw-User-Guide-33da46b16a0f80f6a7fff8e4896b9fca" |
+| 根因 | 1) Lovart 是独特的 AI 设计代理（非单一模型），具备品牌套件生成、设计逻辑理解、Infinite Canvas、多模型自动编排等差异化能力；2) 现有模型矩阵缺少"设计逻辑层"的生成工具；3) Lovart 的文字排版和品牌套件批量生成能力可显著提升 VI 物料产出效率 |
+| 修正位置 | image-models.md 新增 Lovart 总览 + 详细参数 + SDK 示例 + API Key 获取；api-and-tools.md 新增 `LOVART_API_KEY`；SKILL.md 模型计数更新 11家18+ + 版本号 v2.10.0 |
+| 修正内容 | Lovart 作为第11家提供商加入（#17），含完整 API 端点、Credit 定价、并发限制、Python SDK 示例、使用建议、与 Seedream/GPT Image/Flux 的互补定位 |
+| 影响范围 | 生图模型选择（R-IM）+ Phase 3-4 品牌套件/复杂排版产出 |
+| 验证状态 | 🔄 待验证 |
+
+---
+
 ### E-017: 品类化决策辅助 + 材质工艺指南 + 三种生图方式声明
 
 | 字段 | 内容 |

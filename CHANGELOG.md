@@ -1,5 +1,24 @@
 # my-desgin 更新日志
 
+## [v2.10.0] - 2026-04-26
+
+### 新增
+- **Lovart Design Agent（🇺🇸）**：加入第 11 家生图提供商 Lovart，支持多模型自动编排（Nano Banana/Seedream/Flux/Sora）。具备设计逻辑理解能力：排版/品牌套件/图层控制/Infinite Canvas
+- **Lovart 完整 API 参数**：含 API 端点、Python/JS SDK、Credit 定价（Free 500c–Pro 11Kc）、并发限制、获取步骤
+- **image-models.md §三 环境变量检测**：新增 `LOVART_API_KEY` 检测项和 PowerShell 脚本行
+
+### 为什么做这些变更
+- **触发原文**："加入 lovart api 调用 https://lovart.notion.site/..."
+- **根因**：Lovart 是独特的 AI 设计代理（非单一模型），具备品牌套件生成、设计逻辑理解、Infinite Canvas 等差异化能力，与现有 Seedream/GPT Image/Flux 形成互补
+- **修正**：将 Lovart 作为独立提供商加入模型总览（#17），完整 API 参数、定价、SDK 示例、使用建议一并写入 image-models.md
+
+### 影响
+- 用户可选择 Lovart 进行品牌套件批量生成、复杂排版设计、文字精准控制场景
+- Lovart 与 Seedream（中文）/GPT Image 2（质量）/Flux（艺术）形成互补矩阵
+- 模型总览扩展为 11 家 18+ 模型
+
+---
+
 ## [v2.9.0] - 2026-04-26
 
 ### 新增
